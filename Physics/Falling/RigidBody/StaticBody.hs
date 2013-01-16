@@ -1,0 +1,43 @@
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FlexibleInstances     #-}
+
+module Physics.Falling.RigidBody.StaticBody
+(
+StaticBody
+, mkStaticBody
+)
+where
+
+import Data.Vect.Double.Base
+import Physics.Falling.Math.Transform
+import Physics.Falling.RigidBody.Positionable
+import Physics.Falling.RigidBody.CollisionVolume
+
+data (Transform transformType vectorType angleType) =>
+     StaticBody transformType
+                vectorType
+                angleType
+                collisionVolumeType = StaticBody {
+                                         localToWorld       :: transformType
+                                         , worldToLocal     :: transformType
+                                         , collisionVolume  :: collisionVolumeType
+                                      }
+
+instance (Transform t v a) => Positionable (StaticBody t v a cvt) t v a where
+  getLocalToWorld = localToWorld
+  getWorldToLocal = worldToLocal
+  setTransforms i it body = body {
+                              localToWorld = i
+                              , worldToLocal = it
+                            }
+
+instance (Transform t v a) => CollisionVolume (StaticBody t v a cvt) cvt where
+  getCollisionVolume                         = collisionVolume
+  setCollisionVolume newCollisionVolume body = body { collisionVolume = newCollisionVolume }
+
+mkStaticBody :: (Transform t v a) => t -> cvt -> StaticBody t v a cvt
+mkStaticBody initLocalToWorld initCollisionVolume = StaticBody {
+                                                      localToWorld = initLocalToWorld
+                                                      , worldToLocal = inverse initLocalToWorld
+                                                      , collisionVolume = initCollisionVolume
+                                                    }
