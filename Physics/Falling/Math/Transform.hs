@@ -12,7 +12,6 @@ DeltaTransform(..)
 )
 where
 
-import Data.Vect.Double.Util.Projective
 import Data.Vect.Double.Base hiding(translation)
 
 -- FIXME: rename this module with something more descriptive
@@ -40,38 +39,3 @@ class (Vector v, Vector a) => PerpProd v a | v -> a where
 
 class (Vector v) => PrincipalDirections v where
   principalDirections :: [ v ]
-
-
-
-instance DeltaTransform Proj4 Vec3 where
-  deltaTransform p v = dt *. v
-                       where
-                       t  = fromProjective p
-                       dt = trim t :: Mat3
-
-instance Translation Proj4 Vec3 where
-  translation p = trim t :: Vec3
-                  where
-                  (Mat4 _ _ _ t) = fromProjective p
-  translate     = translate4
-
-instance Rotation Proj4 Vec3 where
-  rotate orientationVector = rotateProj4 magnitude normal
-                             where
-                             magnitude = len orientationVector
-                             normal    = toNormalUnsafe $ orientationVector &* magnitude
-
-instance PerpProd Vec3 Vec3 where
-  perp = crossprod
-
-instance Transform Proj4 Vec3 Vec3
-
-instance PrincipalDirections Vec3 where
-  principalDirections = [ Vec3 1 0 0, Vec3 0 1 0 , Vec3 0 0 1,
-                          Vec3 (-1) 0 0, Vec3 0 (-1) 0, Vec3 0 0 (-1) ]
-
-instance PrincipalDirections Vec4 where
-  principalDirections = [ Vec4 1 0 0 0 , Vec4 0 1 0 0 ,
-                          Vec4 0 0 1 0, Vec4 0 0 0 1,
-                          Vec4 (-1) 0 0 0, Vec4 0 (-1) 0 0,
-                          Vec4 0 0 (-1) 0, Vec4 0 0 0 (-1) ]
