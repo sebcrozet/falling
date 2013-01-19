@@ -5,13 +5,11 @@ CollisionDescr(..)
 , ContactManifold
 , collisionDescr2UnibodyCollision
 , collisionDescr2BibodyCollision
-
 )
 where
 
 import Data.Vect.Double.Base
 
--- FIXME: move GeometricCollisionDescr on its own file
 data (Vector v, UnitVector v n) => CollisionDescr v n = CollisionDescr
                                                         {
                                                           contactCenter      :: v

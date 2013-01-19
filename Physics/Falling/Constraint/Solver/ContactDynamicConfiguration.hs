@@ -31,10 +31,14 @@ contactConfiguration rbCenter
                        linearDirection          = contactNormal
                        , angularDirection       = rotationAxis
                        , inverseLinearInertia   = if lensqr contactNormal /= 0.0 then rbInvMass else 0.0
-                       , inverseInertiaMomentum = len (rbWorldInvInertia `applyToVector` rotationAxis) /
-                                                  len rotationAxis
+                       , inverseInertiaMomentum = if rotationAxisMagn /= 0.0 then
+                                                    len (rbWorldInvInertia `applyToVector` rotationAxis) /
+                                                    len rotationAxis
+                                                  else
+                                                     0.0
                        , linearVelocity         = rbLinVelocity &. contactNormal 
                        , angularVelocity        = rbAngVelocity &. rotationAxis
                      }
                      where
-                     rotationAxis = (contactCenter &- rbCenter) `perp` contactNormal
+                     rotationAxis     = (contactCenter &- rbCenter) `perp` contactNormal
+                     rotationAxisMagn = len rotationAxis

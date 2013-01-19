@@ -44,16 +44,17 @@ addSingleBodyEquation :: ContactDynamicConfiguration lv av ->
                          Int ->
                          Double ->
                          Double ->
+                         Double ->
                          AccumulatedImpulseSystem lv av ->
                          AccumulatedImpulseSystem lv av
-addSingleBodyEquation conf idx lLimit hLimit (AccumulatedImpulseSystem mid impulseSystem) =
+addSingleBodyEquation conf idx lLimit hLimit err (AccumulatedImpulseSystem mid impulseSystem) =
                       AccumulatedImpulseSystem (max mid idx) (newEquation:impulseSystem)
                       where
                       newEquation = UnibodyEquation {
                                       index                = idx
                                       , configuration      = conf
-                                      , velocityCorrection = linearVelocity conf +
-                                                             angularVelocity conf
+                                      , velocityCorrection = -(linearVelocity conf + angularVelocity conf)
+                                                             + 0.4 * err
                                       , invTotalInvInertia = 1.0 / (inverseLinearInertia conf +
                                                                     inverseInertiaMomentum conf)
                                       , lowLimit           = lLimit
@@ -66,9 +67,10 @@ addTwoBodiesEquation :: ContactDynamicConfiguration lv av ->
                         Int ->
                         Double ->
                         Double ->
+                        Double ->
                         AccumulatedImpulseSystem lv av ->
                         AccumulatedImpulseSystem lv av
-addTwoBodiesEquation conf1 conf2 id1 id2 lLimit hLimit (AccumulatedImpulseSystem mid impulseSystem) =
+addTwoBodiesEquation conf1 conf2 id1 id2 lLimit hLimit err (AccumulatedImpulseSystem mid impulseSystem) =
                      AccumulatedImpulseSystem (max mid $ max id1 id2) (newEquation:impulseSystem)
                      where
                      newEquation = BibodiesEquation {
@@ -76,21 +78,23 @@ addTwoBodiesEquation conf1 conf2 id1 id2 lLimit hLimit (AccumulatedImpulseSystem
                                      , index2             = id2
                                      , configuration1     = conf1
                                      , configuration2     = conf2
-                                     , velocityCorrection = linearVelocity conf1  +
-                                                            angularVelocity conf1 +
-                                                            linearVelocity conf2  +
-                                                            angularVelocity conf2
-                                     , invTotalInvInertia = 1.0 / (inverseLinearInertia conf1   +
+                                     , velocityCorrection = -(linearVelocity  conf1 +
+                                                              angularVelocity conf1 +
+                                                              linearVelocity  conf2 +
+                                                              angularVelocity conf2)
+                                                            + 0.4 * err
+                                     , invTotalInvInertia = 1.0 / (inverseLinearInertia   conf1 +
                                                                    inverseInertiaMomentum conf1 +
-                                                                   inverseLinearInertia conf2   +
+                                                                   inverseLinearInertia   conf2 +
                                                                    inverseInertiaMomentum conf2)
                                      , lowLimit           = lLimit
                                      , higLimit           = hLimit
                                    }
 
 solve :: (Vector lv, Vector av, DotProd lv, DotProd av) =>
-         Int -> AccumulatedImpulseSystem lv av -> (V.Vector lv, V.Vector av)
-solve niter system = runST $ solveST niter system
+         Int -> AccumulatedImpulseSystem lv av -> Maybe (V.Vector lv, V.Vector av)
+solve _     (AccumulatedImpulseSystem _ []) = Nothing
+solve niter system = Just $ runST $ solveST niter system
 
 solveST :: (Vector lv, Vector av, DotProd lv, DotProd av) =>
            Int -> AccumulatedImpulseSystem lv av -> ST s (V.Vector lv, V.Vector av)
@@ -105,21 +109,22 @@ solveST niter (AccumulatedImpulseSystem mid impulseSystem) =
           CM.forM_ impulseSystem $ (\equation -> do
             i   <- readSTRef currId
             _   <- modifySTRef currId (+1)
-            acc <- M.read impVect i
+            imp <- M.read impVect i
             case equation of
               BibodiesEquation id1 id2 conf1 conf2 vc iti lb ub -> do
                 lv1 <- M.read lVect id1
                 av1 <- M.read aVect id1
                 lv2 <- M.read lVect id2
                 av2 <- M.read aVect id2
-                let (lv1', av1', lv2', av2', acc') = solveBibodyConstraint lv1 av1 ld1 ad1 il1 ia1
+                let (lv1', av1', lv2', av2', imp') = solveBibodyConstraint lv1 av1 ld1 ad1 il1 ia1
                                                                            lv2 av2 ld2 ad2 il2 ia2
-                                                                           iti vc  lb  ub  acc
-                _ <- M.write impVect i acc'
+                                                                           iti vc  lb  ub  imp
+                _ <- M.write impVect i imp'
                 _ <- M.write lVect id1 lv1'
                 _ <- M.write aVect id1 av1'
                 _ <- M.write lVect id2 lv2'
-                M.write aVect id2 av2'
+                _ <- M.write aVect id2 av2'
+                return ()
                 where
                 ld1   = linearDirection conf1
                 ad1   = angularDirection conf1
@@ -132,11 +137,12 @@ solveST niter (AccumulatedImpulseSystem mid impulseSystem) =
               UnibodyEquation  ie conf vc iti lb ub -> do
                 lv <- M.read lVect ie
                 av <- M.read aVect ie
-                let (lv', av', acc') = solveUnibodyConstraint lv  av ld ad il  ia
-                                                              iti vc lb ub acc
-                _ <- M.write impVect i  acc'
+                let (lv', av', imp') = solveUnibodyConstraint lv  av ld ad il  ia
+                                                              iti vc lb ub imp
+                _ <- M.write impVect i  imp'
                 _ <- M.write lVect   ie lv'
-                M.write aVect   ie av'
+                _ <- M.write aVect   ie av'
+                return ()
                 where
                 ld   = linearDirection conf
                 ad   = angularDirection conf
@@ -177,9 +183,9 @@ solveBibodyConstraint linearVelocity1   angularVelocity1
                         newAccumulatedImpulse
                       )
                       where
-                      deltaVelocity = invLinearInertia1  * (linearDirection1  &. linearVelocity1) +
+                      deltaVelocity = invLinearInertia1  * (linearDirection1  &. linearVelocity1)  +
                                       invAngularInertia1 * (angularDirection1 &. angularVelocity1) +
-                                      invLinearInertia2  * (linearDirection2  &. linearVelocity2) +
+                                      invLinearInertia2  * (linearDirection2  &. linearVelocity2)  +
                                       invAngularInertia2 * (angularDirection2 &. angularDirection2);
                       (newAccumulatedImpulse, correctiveImpulse) = solveClamp deltaVelocity
                                                                               totalVelocityCorrection
@@ -223,8 +229,7 @@ solveClamp :: Double -> Double -> Double -> Double -> Double -> Double -> (Doubl
 solveClamp value objective factor solution lowerBound upperBound =
            (clampedSolution, clampedCorrection)
            where
-           remainingError = (objective - value) * factor
-           candidateSolution = solution + remainingError
-           clampedSolution = max lowerBound $
-                             min upperBound candidateSolution
-           clampedCorrection = clampedSolution - candidateSolution
+           remainingError    = (objective - value) * factor
+           clampedSolution   = max lowerBound $
+                               min upperBound $ solution + remainingError
+           clampedCorrection = clampedSolution - solution
