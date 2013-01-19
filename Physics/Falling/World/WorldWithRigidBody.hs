@@ -51,11 +51,11 @@ mkWorld :: (Ord idt
            (Double -> [ (Int, OrderedRigidBody idt t lv av i ii ds ss) ] -> [ cm ] ->
              ([ (Int, OrderedRigidBody idt t lv av i ii ds ss) ], [ cm ])) ->
            World t lv av i ii ds ss bf nf cm idt
-mkWorld initBroadPhase initCollisionDetectionDispatcher initConstraintsIslandSolver
+mkWorld initBroadPhase initCollisionDetectionDispatcher initConstraintsIslandSolver 
         = GW.mkWorld initBroadPhase
                      initCollisionDetectionDispatcher
                      initConstraintsIslandSolver
                      islandNodeFilter
-                     islandEdgeFilter
+                     islandNarrowPhaseFilter
                      activeBodyFilter
                      newGenerator

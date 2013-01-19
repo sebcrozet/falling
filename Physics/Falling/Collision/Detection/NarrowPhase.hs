@@ -4,6 +4,7 @@
 module Physics.Falling.Collision.Detection.NarrowPhase
 (
 NarrowPhase(..)
+, islandNarrowPhaseFilter
 )
 where
 
@@ -13,3 +14,6 @@ class NarrowPhase narrowPhaseType rigidBodyType contactManifoldType | narrowPhas
   update        :: (Int, rigidBodyType) -> (Int, rigidBodyType) -> narrowPhaseType -> narrowPhaseType
   collisions    :: narrowPhaseType -> contactManifoldType
   numCollisions :: narrowPhaseType -> Int
+
+islandNarrowPhaseFilter :: NarrowPhase nf rb cm => (nf, Int) -> Bool
+islandNarrowPhaseFilter (nf, _) = numCollisions nf /= 0

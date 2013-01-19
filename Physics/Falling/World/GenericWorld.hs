@@ -4,6 +4,7 @@ World
 , mkWorld
 , activeBodies
 , collisionGraph
+, rigidBodies
 , addRigidBody
 , addRigidBodies
 , removeRigidBody
@@ -71,6 +72,10 @@ mkWorld initBroadPhase
             , node2GraphIndexGenerator     = initIndexGenerator
           }
 
+rigidBodies ::(Identifiable rb idt , IndexGenerator ig rb, Integrable rb, BroadPhase bf rb , NarrowPhase nf rb cm) =>
+              World rb bf nf cm ig idt -> [ rb ]
+rigidBodies = (map snd).bodies.collisionGraph
+
 addRigidBody :: (Identifiable rb idt , IndexGenerator ig rb, Integrable rb, BroadPhase bf rb , NarrowPhase nf rb cm) =>
                 rb -> World rb bf nf cm ig idt -> World rb bf nf cm ig idt
 addRigidBody b world = world {
@@ -125,7 +130,7 @@ step dt world = newWorld
                 cs         = constraintSolver  world
 
                 -- integrate
-                forwardDynamicsBodies = map (integratePosition dt . integrateVelocity dt) $ activeBodies world
+                forwardDynamicsBodies = map (integrateVelocity dt) $ activeBodies world
                 fdBodiesWithIndex     = map (\b -> (n2g M.! identifier b, b)) forwardDynamicsBodies
 
                 -- execute broad phase
@@ -152,13 +157,14 @@ step dt world = newWorld
                 islands = collisionGroupsAndBodies' afterUpdateCollisionGraph fdBodiesWithIndex nf ef
 
                 -- solve islands
-                third (_, _, v) = v       
-                solvedContacts = map (\(bs, nfs) -> cs dt bs $ map (collisions.third) nfs) islands
-                solvedBodies   = concatMap fst solvedContacts
+                third (_, _, v)    = v       
+                solvedContacts     = map (\(bs, nfs) -> cs dt bs $ map (collisions.third) nfs) islands
+                solvedBodies       = map snd $ concatMap fst solvedContacts
+                repositionedBodies = map (integratePosition dt) $ solvedBodies
 
                 -- update the world
                 newWorld = world {
-                             activeBodies     = map snd solvedBodies
+                             activeBodies     = repositionedBodies
                              , broadPhase     = newBroadPhase
                              , collisionGraph = afterUpdateCollisionGraph
                            }

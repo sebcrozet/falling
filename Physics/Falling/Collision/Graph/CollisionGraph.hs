@@ -169,7 +169,7 @@ collisionGroupsAndBodies g
                          valuationMethod (preds, nid, n, succs) =
                             ((nid, n),
                              (fmap (_formatSuccResult nid) $ filter acceptEdgeValue succs) ++
-                               (fmap (_formatPredResult nid) $ filter acceptEdgeValue preds))
+                             (fmap (_formatPredResult nid) $ filter acceptEdgeValue preds))
 
 collisionGroupsAndBodies'  :: CollisionGraph b c ->
                              [Body b] ->
