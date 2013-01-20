@@ -3,7 +3,7 @@ Falling
 
 **Falling** is a set of purely functional generic constructs to build a Purely Functional Physics Engine. It is born from three observations:
 
-  * 2d and 3d Physics Engines work basically the same way. Thus, there is no reason to write the same, boring, bookkeeping code twice. More than that, all the collision detection and collision responces should be writable independently from the dimension used (provided basic operators like dot products, matrix multiplication, etc. are specialized for each dimensions);
+  * 2d and 3d Physics Engines work basically the same way. Thus, there is no reason to write the same, boring, bookkeeping code twice. More than that, all the collision detection and collision responces should be writable independently from the dimension used (provided basic operators like dot products, matrix multiplication, etc. are specialized for each dimensions).
   * Most physics engine are, somehow, *monolitic*. It is always hard to plug in our own algorithms, or our own custom rigid-body types on an existing physics engine. For example, its is hard to add hyper-realistic aerodynamic features on a Rigid Body based Physics Engine. We try to solve this problem: for example, one can plug its own integration methods and its own constraint solver without loosing the collision detection and collision graph stuffs.
   * A Physics Engine has no reasons to be stateful. Thus, we chose to make it pure.
 
