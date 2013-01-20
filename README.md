@@ -19,6 +19,6 @@ Even if **Falling** comes with code to handle rigid bodies, custom (rigid or not
 
 We strongly recommend to use **cabal** for the compilation/installation routine.
 
-    $ git clone git@github.com:sebcrozet/falling.git
+    $ git clone git://github.com/sebcrozet/falling.git
     $ cd falling
     $ cabal install
