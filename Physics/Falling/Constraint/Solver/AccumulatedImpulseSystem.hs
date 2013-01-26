@@ -54,7 +54,7 @@ addSingleBodyEquation conf idx lLimit hLimit err (AccumulatedImpulseSystem mid i
                                       index                = idx
                                       , configuration      = conf
                                       , velocityCorrection = -(linearVelocity conf + angularVelocity conf)
-                                                             + 0.4 * err
+                                                             + 0.4 * (max 0.0 $ err - 0.01)
                                       , invTotalInvInertia = 1.0 / (inverseLinearInertia conf +
                                                                     inverseInertiaMomentum conf)
                                       , lowLimit           = lLimit
@@ -82,7 +82,7 @@ addTwoBodiesEquation conf1 conf2 id1 id2 lLimit hLimit err (AccumulatedImpulseSy
                                                               angularVelocity conf1 +
                                                               linearVelocity  conf2 +
                                                               angularVelocity conf2)
-                                                            + 0.4 * err
+                                                            + 0.4 * (max 0.0 $ err - 0.01)
                                      , invTotalInvInertia = 1.0 / (inverseLinearInertia   conf1 +
                                                                    inverseInertiaMomentum conf1 +
                                                                    inverseLinearInertia   conf2 +
