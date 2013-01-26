@@ -48,7 +48,7 @@ Library
                    Physics.Falling.Shape.ShapeWithMargin
                    Physics.Falling.Shape.ShapeReflection
                    Physics.Falling.Shape.TransformedShape
-                   Physics.Falling.Shape.MinkovskiSum
+                   Physics.Falling.Shape.MinkowskiSum
                    Physics.Falling.Shape.Plane
                    Physics.Falling.Shape.VolumetricShape
                    Physics.Falling.Shape.CSO
