@@ -3,6 +3,7 @@ module Physics.Falling.Collision.Detection.Simplex
 Simplex
 , emptySimplex
 , dimension
+, points
 , contains
 , addPoint
 , maxLen
@@ -13,6 +14,9 @@ where
 import Data.Vect.Double.Base
 
 data (DotProd v, Vector v) => Simplex v = Simplex [ v ]
+
+points :: (DotProd v, Vector v) => Simplex v -> [ v ]
+points (Simplex pts) = pts
 
 emptySimplex :: (DotProd v, Vector v) => Simplex v
 emptySimplex = Simplex []

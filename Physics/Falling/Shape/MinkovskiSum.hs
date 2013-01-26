@@ -4,7 +4,7 @@
 module Physics.Falling.Shape.MinkovskiSum
 (
 MinkovskiSum(..)
-, AnnotatedMinkovskiSum
+, AnnotatedMinkovskiSum(..)
 )
 where
 
