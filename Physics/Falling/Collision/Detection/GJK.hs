@@ -6,6 +6,7 @@ where
 
 import Data.Vect.Double.Base hiding(translation, distance)
 import Physics.Falling.Math.Transform
+import Physics.Falling.Math.Error
 import Physics.Falling.Shape.ImplicitShape
 import Physics.Falling.Collision.Detection.Simplex hiding(dimension)
 import qualified Physics.Falling.Collision.Detection.Simplex as S (dimension)
@@ -48,17 +49,3 @@ stepGJK s1 s2 lastSimplex newSimplex v barCoords =
         csoPoint               = sampleCSO s1 s2 oppnv
         newSimplex'            = addPoint csoPoint newSimplex
         catTuple4 c (a, b, d)  = (a, b, c, d)
-
-sampleCSO :: (ImplicitShape g1 v, ImplicitShape g2 v, Transform m v av, UnitVector v n) =>
-             (g1, m, m) -> (g2, m, m) -> n -> v
-sampleCSO (g1, t1, it1) (g2, t2, it2) dir = p1 &- p2
-                                            where
-                                            p1     = supportPointWithTransform g1 dir    t1 it1
-                                            p2     = supportPointWithTransform g2 oppDir t2 it2
-                                            oppDir = toNormalUnsafe $ neg $ fromNormal dir
-
-sqEpsRel :: Double
-sqEpsRel = sqrt epsTol -- FIXME
-
-epsTol :: Double
-epsTol = 100.0 * (2.0 ** (-53)) -- FIXME
