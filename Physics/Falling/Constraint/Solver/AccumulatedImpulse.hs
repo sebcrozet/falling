@@ -107,9 +107,8 @@ integrate dt bodies linImpVect angImpVect shift =
             let idx    = i + shift in
             let linImp = linImpVect V.! idx in
             let angImp = angImpVect V.! idx in
-            let rb'    = if (isNaN $ len linImp) || (isNaN $ len angImp) then error "NaN integrate" else setVelocities
-                         (getLinearVelocity  rb &+ getExternalLinearForce  rb &* dt,
-                          getAngularVelocity rb &+ getExternalAngularForce rb &* dt)
-                         rb
+            let rb'    = setVelocities (getLinearVelocity  rb &+ getExternalLinearForce  rb &* dt,
+                                        getAngularVelocity rb &+ getExternalAngularForce rb &* dt)
+                                       rb
             in
             (i, applyImpulses linImp angImp rb')
