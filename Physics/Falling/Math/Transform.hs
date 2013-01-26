@@ -7,7 +7,7 @@ DeltaTransform(..)
 , Translation(..)
 , Rotation(..)
 , Transform(..)
-, PrincipalDirections(..)
+, TransformSystem
 , PerpProd(..)
 )
 where
@@ -27,14 +27,15 @@ class Rotation p r | p -> r where
   -- rotation :: p -> r
   rotate   :: r -> p -> p
 
-class (MultSemiGroup p, Matrix p, DeltaTransform p v, Rotation p a, Translation p v,
-       PerpProd v a, DotProd v, DotProd a) =>
-      Transform p v a | p -> a where
+-- class (MultSemiGroup p, Matrix p, DeltaTransform p v, Rotation p a, Translation p v,
+--        PerpProd v a, DotProd v, DotProd a) =>
+class (DeltaTransform p v, Vector v, Translation p v) => Transform p v where
   transform :: p -> v -> v
   transform proj vect = deltaTransform proj vect &+ translation proj
 
 class (Vector v, Vector a) => PerpProd v a | v -> a where
   perp :: v -> v -> a
 
-class (Vector v) => PrincipalDirections v where
-  principalDirections :: [ v ]
+class (MultSemiGroup p, Matrix p, DeltaTransform p v, Rotation p a, Transform p v,
+       PerpProd v a, DotProd v, DotProd a) =>
+      TransformSystem p v a

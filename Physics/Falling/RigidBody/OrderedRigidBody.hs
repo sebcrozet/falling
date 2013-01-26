@@ -19,7 +19,7 @@ import Physics.Falling.Identification.IndexGenerator
 import qualified Physics.Falling.Identification.SignedIndexGenerator as IG
 
 data (Ord identifierType
-      , Transform transformType linearVelocityType angularVelocityType
+      , TransformSystem transformType linearVelocityType angularVelocityType
       , VolumetricShape dynamicCollisionVolumeType
                         inertiaTensorType
                         inverseInertiaTensorType
@@ -45,36 +45,36 @@ data (Ord identifierType
                                                   staticCollisionVolumeType
                         }
 
-instance (Ord idt , Transform t lv av , VolumetricShape dvt i ii av t)
+instance (Ord idt , TransformSystem t lv av , VolumetricShape dvt i ii av t)
          => I.Identifiable (OrderedRigidBody idt t lv av i ii dvt svt) idt where
   identifier = identifier
 
-instance (Ord idt , Transform t lv av , VolumetricShape dvt i ii av t)
+instance (Ord idt , TransformSystem t lv av , VolumetricShape dvt i ii av t)
          => Integrable (OrderedRigidBody idt t lv av i ii dvt svt) where
   integrateVelocity dt = mapOnBody $ integrateVelocity dt
   integratePosition dt = mapOnBody $ integratePosition dt
 
-instance (Ord idt , Transform t lv av , VolumetricShape dvt i ii av t)
+instance (Ord idt , TransformSystem t lv av , VolumetricShape dvt i ii av t)
          => IndexGenerator IG.SignedIndexGenerator (OrderedRigidBody idt t lv av i ii dvt svt) where
   generate b   = generate $ rigidBody b
   recycle  _   = IG.recycle
 
-instance (Ord idt , Transform t lv av , VolumetricShape dvt i ii av t)
+instance (Ord idt , TransformSystem t lv av , VolumetricShape dvt i ii av t)
          => Eq (OrderedRigidBody idt t lv av i ii dvt svt) where
   a == b = identifier a == identifier b
 
-instance (Ord idt , Transform t lv av , VolumetricShape dvt i ii av t)
+instance (Ord idt , TransformSystem t lv av , VolumetricShape dvt i ii av t)
          => Ord (OrderedRigidBody idt t lv av i ii dvt svt) where
   a <= b = identifier a <= identifier b
 
-orderRigidBody :: (Ord idt, Transform t lv av, VolumetricShape dvt i ii av t) =>
+orderRigidBody :: (Ord idt, TransformSystem t lv av, VolumetricShape dvt i ii av t) =>
                   idt -> RigidBody t lv av i ii dvt svt -> OrderedRigidBody  idt t lv av i ii dvt svt
 orderRigidBody i b = OrderedRigidBody {
                        identifier = i
                        , rigidBody = b
                      }
 
-mapOnBody :: (Ord idt, Transform t lv av, VolumetricShape dvt i ii av t) =>
+mapOnBody :: (Ord idt, TransformSystem t lv av, VolumetricShape dvt i ii av t) =>
              (RigidBody t lv av i ii dvt svt -> RigidBody t lv av i ii dvt svt) ->
              OrderedRigidBody  idt t lv av i ii dvt svt ->
              OrderedRigidBody  idt t lv av i ii dvt svt

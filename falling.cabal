@@ -31,6 +31,7 @@ Library
                    Physics.Falling.Integrator.GenericEulerIntegrator
                    Physics.Falling.Integrator.Integrable
                    Physics.Falling.Math.Transform
+                   Physics.Falling.Math.AnnotatedVector
                    Physics.Falling.RigidBody.CollisionVolume
                    Physics.Falling.RigidBody.Dynamic
                    Physics.Falling.RigidBody.DynamicBody

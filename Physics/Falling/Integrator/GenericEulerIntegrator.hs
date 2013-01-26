@@ -37,7 +37,7 @@ integrateBodyVelocity dt b = setVelocities newVels b
                              fextAng   = getExternalAngularForce b
                              newVels   = integrateVelocity dt fextLin fextAng oldLinVel oldAngVel
 
-displacement :: (Vector lv, Vector av, Transform m lv av) =>
+displacement :: (Vector lv, Vector av, TransformSystem m lv av) =>
                  Double -> lv -> av -> m -> m -- FIXME: is there a way to avoid the unused parameter?
 displacement dt linVel angVel originalMatrix = translate (dt *& linVel &+ originalTranslation) $
                                                rotate    (dt *& angVel) $

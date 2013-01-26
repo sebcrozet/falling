@@ -15,7 +15,7 @@ import Physics.Falling.Integrator.GenericEulerIntegrator
 import Physics.Falling.Identification.IndexGenerator
 import qualified Physics.Falling.Identification.SignedIndexGenerator as IG
 
-data (Transform transformType linearVelocityType angularVelocityType
+data (TransformSystem transformType linearVelocityType angularVelocityType
       , VolumetricShape dynamicCollisionVolumeType
                         inertiaTensorType
                         inverseInertiaTensorType
@@ -42,7 +42,7 @@ data (Transform transformType linearVelocityType angularVelocityType
 -- | KinematicBody KinematicBody -- FIXME
 -- | PhantomBody   PhantomBody   -- FIXME
 
-instance (Transform t lv av, VolumetricShape dvt i ii av t) =>
+instance (TransformSystem t lv av, VolumetricShape dvt i ii av t) =>
          Integrable (RigidBody t lv av i ii dvt svt) where
   integrateVelocity dt (DynamicBody d) = DynamicBody $ integrateBodyVelocity dt d
   integrateVelocity _  b               = b
@@ -50,7 +50,7 @@ instance (Transform t lv av, VolumetricShape dvt i ii av t) =>
   integratePosition dt (DynamicBody d) = DynamicBody $ integrateBodyPosition dt d
   integratePosition _  b               = b
 
-instance (Transform t lv av, VolumetricShape dvt i ii av t) =>
+instance (TransformSystem t lv av, VolumetricShape dvt i ii av t) =>
          IndexGenerator IG.SignedIndexGenerator (RigidBody t lv av i ii dvt svt) where
   generate (DynamicBody _) = IG.generatePositiveId
   generate _               = IG.generateNegativeId

@@ -12,7 +12,7 @@ import Physics.Falling.RigidBody.RigidBody
 import Physics.Falling.RigidBody.OrderedRigidBody
 import qualified Physics.Falling.Constraint.Solver.AccumulatedImpulse as AI
 
-solveConstraintsIsland :: (Ord idt , Transform t lv av , VolumetricShape dvt i ii av t, UnitVector lv n) =>
+solveConstraintsIsland :: (Ord idt , TransformSystem t lv av , VolumetricShape dvt i ii av t, UnitVector lv n) =>
                           Double ->
                           [ (Int, OrderedRigidBody idt t lv av i ii dvt svt) ] ->
                           [ ContactManifold lv n ] ->

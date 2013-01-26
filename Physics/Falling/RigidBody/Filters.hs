@@ -14,7 +14,7 @@ import Physics.Falling.RigidBody.RigidBody
 islandNodeFilter :: NarrowPhase nf rb cm => (nf, Int) -> Bool
 islandNodeFilter e@(_, uid) = islandNarrowPhaseFilter e && uid >= 0
 
-activeBodyFilter :: (Ord idt , Transform t lv av , VolumetricShape dvt i ii av t) =>
+activeBodyFilter :: (Ord idt , TransformSystem t lv av , VolumetricShape dvt i ii av t) =>
                     OrderedRigidBody idt t lv av i ii dvt svt -> Bool
 activeBodyFilter b = case rigidBody b of
                      DynamicBody _ -> True

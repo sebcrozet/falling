@@ -42,7 +42,7 @@ type World transformType
                       identifierType
 
 mkWorld :: (Ord idt
-            , Transform t lv av
+            , TransformSystem t lv av
             , VolumetricShape ds i ii av t
             , NarrowPhase nf (OrderedRigidBody idt t lv av i ii ds ss) cm
             , BroadPhase  bf (OrderedRigidBody idt t lv av i ii ds ss)) =>

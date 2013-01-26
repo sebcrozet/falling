@@ -14,7 +14,7 @@ import qualified Physics.Falling.Collision.Detection.Simplex as S (dimension)
 type SimplexResult v = Either (v, [ Double ], Simplex v, Simplex v) -- need more iterations
                               (v, [ Double ], Simplex v)            -- success
 
-distance :: (ImplicitShape g1 v, ImplicitShape g2 v, Transform m v av, UnitVector v n, Eq v, Fractional v) =>
+distance :: (ImplicitShape g1 v, ImplicitShape g2 v, Transform m v, UnitVector v n, Eq v, Fractional v) =>
             (g1, m, m) -> (g2, m, m) -> Int -> Double
 distance s1 s2 dimension = case algorithmGJK s1 s2 dimension $ Left (initialPoint, [], emptySimplex, emptySimplex) of
                            Nothing                 -> 0.0
@@ -26,7 +26,9 @@ distance s1 s2 dimension = case algorithmGJK s1 s2 dimension $ Left (initialPoin
                                               else 1.0
                            initialPoint     = sampleCSO s1 s2 $ mkNormal notNullDirection
 
-algorithmGJK :: (ImplicitShape g1 v, ImplicitShape g2 v, Transform m v av, UnitVector v n, Eq v) =>
+-- collisionWithMargin margin s1 s2 dimension = 
+
+algorithmGJK :: (ImplicitShape g1 v, ImplicitShape g2 v, Transform m v, UnitVector v n, Eq v) =>
                 (g1, m, m) -> (g2, m, m) -> Int -> SimplexResult v -> Maybe (v, Simplex v, [ Double ])
 algorithmGJK s1 s2 dimension (Left (projection, barCoords, lastSimplex, newSimplex))
              | sDim /= 0 && (sDim == dimension + 1 || lensqr projection <= epsTol * maxLen newSimplex) = Nothing
@@ -36,7 +38,7 @@ algorithmGJK s1 s2 dimension (Left (projection, barCoords, lastSimplex, newSimpl
 algorithmGJK _ _ _ (Right (projection, barCoords, simplex)) = 
              Just (projection, simplex, barCoords)
 
-stepGJK :: (ImplicitShape g1 v, ImplicitShape g2 v, Transform m v av, UnitVector v n, Eq v) =>
+stepGJK :: (ImplicitShape g1 v, ImplicitShape g2 v, Transform m v, UnitVector v n, Eq v) =>
            (g1, m, m) -> (g2, m, m) -> Simplex v -> Simplex v -> v -> [ Double ] -> SimplexResult v
 stepGJK s1 s2 lastSimplex newSimplex v barCoords =
         if contains csoPoint lastSimplex || sqlenv - v &. csoPoint <= sqEpsRel * sqlenv then

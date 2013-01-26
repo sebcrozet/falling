@@ -12,8 +12,8 @@ import Physics.Falling.Shape.Plane
 import Physics.Falling.Collision.Collision
 
 collidePlaneImplicitShape :: (ImplicitShape  g v
-                              , Transform      m v av
-                              , Transform      mp v av
+                              , Transform      m v
+                              , Transform      mp v
                               , UnitVector     v n) =>
                               Plane v -> g -> mp -> m -> m -> Maybe (CollisionDescr v n)
 collidePlaneImplicitShape (Plane upVec) other planeTransform otherTransform inverseOtherTransform =

@@ -10,7 +10,7 @@ where
 import Data.Vect.Double.Base
 import qualified Physics.Falling.Math.Transform as T
 
-class (T.Transform t v av) => Positionable p t v av | p -> t where
+class (T.TransformSystem t v av) => Positionable p t v av | p -> t where
   getLocalToWorld       :: p -> t
   getWorldToLocal       :: p -> t
   setTransforms         :: t -> t -> p -> p
@@ -24,8 +24,8 @@ class (T.Transform t v av) => Positionable p t v av | p -> t where
   translate             :: v -> p -> p
   rotate                :: av -> p -> p
 
-  setLocalToWorld t = setTransforms t (inverse t)
-  setWorldToLocal t = setTransforms (inverse t) t
+  setLocalToWorld t    = setTransforms t (inverse t)
+  setWorldToLocal t    = setTransforms (inverse t) t
   resetToIdentity      = setTransforms idmtx idmtx
   prependTransform t p = setLocalToWorld (t .*. getLocalToWorld p) p
   appendTransform  t p = setLocalToWorld (getLocalToWorld p .*. t) p
