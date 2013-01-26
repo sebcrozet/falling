@@ -12,13 +12,13 @@ where
 import Data.Vect.Double.Base
 import Physics.Falling.Shape.ImplicitShape
 
-newtype Ball = Ball Double
+newtype Vector v => Ball v = Ball Double
 
-instance (Vector v) => ImplicitShape Ball v where
+instance (DotProd v, Vector v) => ImplicitShape (Ball v) v where
   supportPoint = ballSupportPoint
 
-ballSupportPoint :: (Vector v) => v -> Ball -> v
-ballSupportPoint direction (Ball radius) = direction &* radius
+ballSupportPoint :: (DotProd v, Vector v) => (Ball v) -> v -> v
+ballSupportPoint (Ball radius) direction = (direction &* (1.0 / len direction)) &* radius
 
-ballVolume :: Ball -> Int -> Double
+ballVolume :: (Ball v) -> Int -> Double
 ballVolume (Ball radius) dimension = pi * radius ^ dimension

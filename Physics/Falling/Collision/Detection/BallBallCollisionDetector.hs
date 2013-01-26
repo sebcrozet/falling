@@ -11,7 +11,7 @@ import Physics.Falling.Collision.Collision
 
 -- generic ballball collision detection algorithm
 collideBallBall :: (Translation m v, UnitVector v n) =>
-                   Ball -> Ball -> m -> m -> Maybe (CollisionDescr v n)
+                   (Ball v) -> (Ball v) -> m -> m -> Maybe (CollisionDescr v n)
 collideBallBall (Ball r1) (Ball r2) transform1 transform2 =
                                             if sqDist <= (r1 + r2) ** 2.0 then
                                               Just $ CollisionDescr collisionCenter

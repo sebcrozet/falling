@@ -24,7 +24,7 @@ collidePlaneImplicitShape (Plane upVec) other planeTransform otherTransform inve
                           where
                           planeCenter    = translation planeTransform
                           planeNormal    = mkNormal $ planeTransform `deltaTransform` upVec
-                          invPlaneNormal = toNormalUnsafe $ neg $ fromNormal planeNormal
+                          invPlaneNormal = neg $ fromNormal planeNormal
                           deepestPoint   = supportPointWithTransform other
                                                                      invPlaneNormal
                                                                      otherTransform

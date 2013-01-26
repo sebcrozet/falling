@@ -27,8 +27,6 @@ class Rotation p r | p -> r where
   -- rotation :: p -> r
   rotate   :: r -> p -> p
 
--- class (MultSemiGroup p, Matrix p, DeltaTransform p v, Rotation p a, Translation p v,
---        PerpProd v a, DotProd v, DotProd a) =>
 class (DeltaTransform p v, Vector v, Translation p v) => Transform p v where
   transform :: p -> v -> v
   transform proj vect = deltaTransform proj vect &+ translation proj

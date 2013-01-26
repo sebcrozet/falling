@@ -32,6 +32,7 @@ Library
                    Physics.Falling.Integrator.Integrable
                    Physics.Falling.Math.Transform
                    Physics.Falling.Math.AnnotatedVector
+                   Physics.Falling.Math.Error
                    Physics.Falling.RigidBody.CollisionVolume
                    Physics.Falling.RigidBody.Dynamic
                    Physics.Falling.RigidBody.DynamicBody
@@ -44,8 +45,13 @@ Library
                    Physics.Falling.RigidBody.StaticBody
                    Physics.Falling.Shape.Ball
                    Physics.Falling.Shape.ImplicitShape
+                   Physics.Falling.Shape.ShapeWithMargin
+                   Physics.Falling.Shape.ShapeReflection
+                   Physics.Falling.Shape.TransformedShape
+                   Physics.Falling.Shape.MinkovskiSum
                    Physics.Falling.Shape.Plane
                    Physics.Falling.Shape.VolumetricShape
+                   Physics.Falling.Shape.CSO
                    Physics.Falling.World.GenericWorld
                    Physics.Falling.World.WorldWithRigidBody
   Build-Depends:  base, vect >= 0.4.0, containers >= 0.5.0.0, fgl >= 5.4.0.0, vector >= 0.10.0.0
