@@ -17,8 +17,10 @@ Library
                    Physics.Falling.Collision.Detection.NarrowPhase
                    Physics.Falling.Collision.Detection.BallBallCollisionDetector
                    Physics.Falling.Collision.Detection.PlaneImplicitShapeCollisionDetector
+                   Physics.Falling.Collision.Detection.ImplicitShapeImplicitShapeCollisionDetector
                    Physics.Falling.Collision.Detection.Simplex
                    Physics.Falling.Collision.Detection.GJK
+                   Physics.Falling.Collision.Detection.MinkowskiSampling
                    Physics.Falling.Collision.Graph.CollisionGraph
                    Physics.Falling.Collision.Graph.CollisionGraphTree
                    Physics.Falling.Constraint.Solver.AccumulatedImpulseSystem
@@ -33,6 +35,7 @@ Library
                    Physics.Falling.Math.Transform
                    Physics.Falling.Math.AnnotatedVector
                    Physics.Falling.Math.Error
+                   Physics.Falling.Math.UnitSphere
                    Physics.Falling.RigidBody.CollisionVolume
                    Physics.Falling.RigidBody.Dynamic
                    Physics.Falling.RigidBody.DynamicBody

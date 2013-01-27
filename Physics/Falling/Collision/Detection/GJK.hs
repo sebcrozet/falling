@@ -5,6 +5,7 @@ distanceToOrigin
 , algorithmGJK
 , closestPoints
 , initialSimplexResult
+, SimplexResult
 )
 where
 
@@ -37,7 +38,7 @@ closestPoints :: (ImplicitShape g1 v, ImplicitShape g2 v, Transform m v, UnitVec
                  (g1, m, m) -> (g2, m, m) -> Int -> Maybe (v, v)
 closestPoints s1@(_, t1, _) s2@(_, t2, _) dimension =
               case algorithmGJK cso dimension $ initialSimplexResult initialPoint of
-              Nothing                 -> Nothing
+              Nothing        -> Nothing
               Just (_, b, s) -> Just $ _pointsFromAnnotatedSimplex b s 
               where
               cso              = mkAnnotatedCSOWithTransforms s1 s2

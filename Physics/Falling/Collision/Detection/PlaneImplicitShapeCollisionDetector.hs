@@ -4,18 +4,17 @@ collidePlaneImplicitShape
 )
 where
 
-
 import Data.Vect.Double.Base hiding(translation)
 import Physics.Falling.Math.Transform
 import Physics.Falling.Shape.ImplicitShape
 import Physics.Falling.Shape.Plane
 import Physics.Falling.Collision.Collision
 
-collidePlaneImplicitShape :: (ImplicitShape  g v
-                              , Transform      m v
-                              , Transform      mp v
-                              , UnitVector     v n) =>
-                              Plane v -> g -> mp -> m -> m -> Maybe (CollisionDescr v n)
+collidePlaneImplicitShape :: (ImplicitShape  g  v
+                              , Transform    m  v
+                              , Transform    mp v
+                              , UnitVector   v  n) =>
+                             Plane v -> g -> mp -> m -> m -> Maybe (CollisionDescr v n)
 collidePlaneImplicitShape (Plane upVec) other planeTransform otherTransform inverseOtherTransform =
                           if d > 0.0 then
                             Just $ CollisionDescr c n d
