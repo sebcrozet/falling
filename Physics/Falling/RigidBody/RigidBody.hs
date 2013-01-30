@@ -39,6 +39,7 @@ data (TransformSystem transformType linearVelocityType angularVelocityType
                                           linearVelocityType
                                           angularVelocityType
                                           staticCollisionVolumeType)
+                 deriving(Show)
 -- | KinematicBody KinematicBody -- FIXME
 -- | PhantomBody   PhantomBody   -- FIXME
 

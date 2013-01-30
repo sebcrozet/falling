@@ -11,6 +11,7 @@ import Data.Vect.Double.Base
 import Physics.Falling.Shape.ImplicitShape
 
 newtype (ImplicitShape g v) => ShapeReflection g v = ShapeReflection g
+                                                     deriving(Show)
 
 instance (ImplicitShape g v) => ImplicitShape (ShapeReflection g v) v where
   supportPoint (ShapeReflection g) dir = neg $ supportPoint g $ neg dir

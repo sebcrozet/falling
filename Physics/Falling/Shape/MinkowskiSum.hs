@@ -13,7 +13,9 @@ import Physics.Falling.Shape.ImplicitShape
 import Physics.Falling.Math.AnnotatedVector
 
 data (ImplicitShape g1 v, ImplicitShape g2 v) => MinkowskiSum          g1 g2 v = MinkowskiSum g1 g2
+                                                                                 deriving(Show)
 data (ImplicitShape g1 v, ImplicitShape g2 v) => AnnotatedMinkowskiSum g1 g2 v = AnnotatedMinkowskiSum g1 g2
+                                                                                 deriving(Show)
 
 instance (ImplicitShape g1 v, ImplicitShape g2 v) => ImplicitShape (MinkowskiSum g1 g2 v) v where
   supportPoint (MinkowskiSum g1 g2) dir = supportPoint g1 dir &+ supportPoint g2 dir

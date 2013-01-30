@@ -21,7 +21,7 @@ data (TransformSystem transformType vectorType angleType) =>
                                          localToWorld       :: transformType
                                          , worldToLocal     :: transformType
                                          , collisionVolume  :: collisionVolumeType
-                                      }
+                                      } deriving(Show)
 
 instance (TransformSystem t v a) => Positionable (StaticBody t v a cvt) t v a where
   getLocalToWorld = localToWorld

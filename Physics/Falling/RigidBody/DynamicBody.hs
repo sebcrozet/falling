@@ -41,15 +41,15 @@ data (TransformSystem transformType linearVelocityType angularVelocityType
                       , collisionVolume                 :: collisionVolumeType
                       , externalLinearForce             :: linearVelocityType
                       , externalAngularForce            :: angularVelocityType
-                   }
+                   } deriving(Show)
 
 instance (TransformSystem t lv av, VS.VolumetricShape cvt i ii av t) =>
          Positionable (DynamicBody t lv av i ii cvt) t lv av where
   getLocalToWorld = localToWorld
   getWorldToLocal = worldToLocal
   setTransforms t it body = body {
-                              localToWorld = t
-                              , worldToLocal = it
+                              localToWorld                     = t
+                              , worldToLocal                   = it
                               , worldSpaceInverseInertiaTensor = newWorldInverseTensor
                             }
                             where

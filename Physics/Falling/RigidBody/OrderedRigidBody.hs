@@ -44,6 +44,7 @@ data (Ord identifierType
                                                   dynamicCollisionVolumeType
                                                   staticCollisionVolumeType
                         }
+                        deriving(Show)
 
 instance (Ord idt , TransformSystem t lv av , VolumetricShape dvt i ii av t)
          => I.Identifiable (OrderedRigidBody idt t lv av i ii dvt svt) idt where

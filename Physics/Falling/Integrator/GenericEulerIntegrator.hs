@@ -38,11 +38,11 @@ integrateBodyVelocity dt b = setVelocities newVels b
                              newVels   = integrateVelocity dt fextLin fextAng oldLinVel oldAngVel
 
 displacement :: (Vector lv, Vector av, TransformSystem m lv av) =>
-                 Double -> lv -> av -> m -> m -- FIXME: is there a way to avoid the unused parameter?
-displacement dt linVel angVel originalMatrix = translate (dt *& linVel &+ originalTranslation) $
-                                               rotate    (dt *& angVel) $
-                                               translate (neg $ originalTranslation) $
-                                               idmtx
+                 Double -> lv -> av -> m -> m
+displacement dt linVel angVel originalMatrix = translate   (dt *& linVel &+ originalTranslation)
+                                               $ rotate    (dt *& angVel)
+                                               $ translate (neg $ originalTranslation)
+                                               $ idmtx
                                                where
                                                originalTranslation = translation originalMatrix
                             
@@ -51,8 +51,8 @@ integrateVelocity :: (Vector v, Vector av) => Double -> v -> av -> v -> av -> (v
 integrateVelocity dt fextLin fextAng linVel angVel =
                   ( dampVector newLinearVelocity, dampVector newAngularVelocity )
                   where
-                  newLinearVelocity = integrate dt linVel fextLin
-                  newAngularVelocity  = integrate dt angVel fextAng
+                  newLinearVelocity  = integrate dt linVel fextLin
+                  newAngularVelocity = integrate dt angVel fextAng
 
 integrate :: (Vector v) => Double -> v -> v -> v
 integrate dt v f = v &+ dt *& f

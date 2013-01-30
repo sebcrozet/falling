@@ -37,18 +37,18 @@ class (Positionable d t lv av, InverseInertiaTensor ii av t) =>
   applyImpulses                     :: lv -> av -> d -> d
   applyPositionImpulses             :: lv -> av -> d -> d
 
-  getVelocities d          = (getLinearVelocity d, getAngularVelocity d)
-  setVelocities (lv, av)   = setAngularVelocity av . setLinearVelocity lv
-  applyCentralImpulse lv d = setLinearVelocity (getLinearVelocity d &+ centralImpulseDeltaVelotity lv d) d
-  applyAngularImpulse av d = setAngularVelocity (getAngularVelocity d &+ angularImpulseDeltaVelocity av d) d
-  applyImpulses    lv av   = applyCentralImpulse lv . applyAngularImpulse av
-  applyCentralPositionImpulse lv d  = translate (centralImpulseDeltaVelotity lv d) d
-  applyAngularPositionImpulse av d  = rotate (angularImpulseDeltaVelocity av d) d
+  getVelocities       d        = (getLinearVelocity d, getAngularVelocity d)
+  setVelocities       (lv, av) = setAngularVelocity av . setLinearVelocity lv
+  applyCentralImpulse lv d     = setLinearVelocity (getLinearVelocity d &+ centralImpulseDeltaVelotity d lv) d
+  applyAngularImpulse av d     = setAngularVelocity (getAngularVelocity d &+ angularImpulseDeltaVelocity d av) d
+  applyImpulses       lv av   = applyCentralImpulse lv . applyAngularImpulse av
+  applyCentralPositionImpulse lv d  = translate (centralImpulseDeltaVelotity d lv) d
+  applyAngularPositionImpulse av d  = rotate (angularImpulseDeltaVelocity d av) d
   applyPositionImpulses       lv av = applyCentralPositionImpulse lv . applyAngularPositionImpulse av
 
 
-centralImpulseDeltaVelotity :: (Dynamic d t lv av ii) => lv -> d -> lv
-centralImpulseDeltaVelotity lv d = lv &* getInverseMass d
+centralImpulseDeltaVelotity :: (Dynamic d t lv av ii) => d -> lv -> lv
+centralImpulseDeltaVelotity d lv = lv &* getInverseMass d
 
-angularImpulseDeltaVelocity :: (Dynamic d t lv av ii) => av -> d -> av
-angularImpulseDeltaVelocity av d = getWorldSpaceInverseInertiaTensor d `applyToVector` av
+angularImpulseDeltaVelocity :: (Dynamic d t lv av ii) => d -> av -> av
+angularImpulseDeltaVelocity d av = getWorldSpaceInverseInertiaTensor d `applyToVector` av

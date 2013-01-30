@@ -13,6 +13,7 @@ import Data.Vect.Double.Base
 import Physics.Falling.Shape.ImplicitShape
 
 newtype Vector v => Ball v = Ball Double
+                             deriving(Show)
 
 instance (DotProd v, Vector v) => ImplicitShape (Ball v) v where
   supportPoint = ballSupportPoint
