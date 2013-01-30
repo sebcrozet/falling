@@ -9,9 +9,8 @@ distanceToOrigin
 )
 where
 
-import Data.Vect.Double.Base hiding(translation, distance)
 import Physics.Falling.Math.Error
-import Physics.Falling.Math.Transform
+import Physics.Falling.Math.Transform hiding(distance)
 import Physics.Falling.Math.AnnotatedVector
 import Physics.Falling.Shape.ImplicitShape
 import Physics.Falling.Shape.CSO

@@ -7,7 +7,7 @@ Dynamic(..)
 )
 where
 
-import Data.Vect.Double.Base
+import Physics.Falling.Math.Transform hiding(translate, rotate)
 import Physics.Falling.RigidBody.Positionable
 import Physics.Falling.Dynamics.InertiaTensor
 

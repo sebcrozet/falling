@@ -8,9 +8,9 @@ MinkowskiSum(..)
 )
 where
 
-import Data.Vect.Double.Base
-import Physics.Falling.Shape.ImplicitShape
+import Physics.Falling.Math.Transform
 import Physics.Falling.Math.AnnotatedVector
+import Physics.Falling.Shape.ImplicitShape
 
 data (ImplicitShape g1 v, ImplicitShape g2 v) => MinkowskiSum          g1 g2 v = MinkowskiSum g1 g2
                                                                                  deriving(Show)

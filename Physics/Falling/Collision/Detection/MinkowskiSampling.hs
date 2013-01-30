@@ -6,7 +6,6 @@ approximatePenetration
 where
 
 import Data.List
-import Data.Vect.Double.Base
 import Physics.Falling.Math.Transform
 import Physics.Falling.Math.UnitSphere
 import Physics.Falling.Shape.ImplicitShape

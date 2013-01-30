@@ -9,7 +9,7 @@ CollisionDescr(..)
 )
 where
 
-import Data.Vect.Double.Base
+import Physics.Falling.Math.Transform
 
 data (Vector v, UnitVector v n) => CollisionDescr v n = CollisionDescr
                                                         {

@@ -13,7 +13,7 @@ import qualified Control.Monad as CM
 import qualified Data.Vector as V
 import qualified Data.Vector.Mutable as M
 import Data.STRef
-import Data.Vect.Double.Base
+import Physics.Falling.Math.Transform
 import Physics.Falling.Constraint.Solver.ContactDynamicConfiguration
 
 data Equation lv av = UnibodyEquation {

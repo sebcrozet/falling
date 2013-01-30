@@ -4,7 +4,6 @@ collideImplicitShapeImplicitShape
 )
 where
 
-import Data.Vect.Double.Base
 import Physics.Falling.Math.Error
 import Physics.Falling.Math.Transform
 import Physics.Falling.Math.UnitSphere

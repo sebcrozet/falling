@@ -6,7 +6,7 @@ CollisionDispatcher(..)
 )
 where
 
-import Data.Vect.Double.Base
+import Physics.Falling.Math.Transform
 import Physics.Falling.Collision.Detection.CollisionDetectionAlgorithm
 
 class (UnitVector v n, CollisionDetectionAlgorithm a m v n) => CollisionDispatcher d a g m v n where

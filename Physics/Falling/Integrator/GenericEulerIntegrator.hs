@@ -8,7 +8,6 @@ integrateBodyPosition
 )
 where
 
-import Data.Vect.Double.Base hiding(translation)
 import Physics.Falling.Math.Transform
 import Physics.Falling.RigidBody.Positionable hiding(translate, rotate)
 import Physics.Falling.RigidBody.Dynamic

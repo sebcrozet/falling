@@ -8,7 +8,6 @@ StaticBody
 )
 where
 
-import Data.Vect.Double.Base
 import Physics.Falling.Math.Transform
 import Physics.Falling.RigidBody.Positionable
 import Physics.Falling.RigidBody.CollisionVolume

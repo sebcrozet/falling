@@ -4,7 +4,6 @@ collideBallBall
 )
 where
 
-import Data.Vect.Double.Base hiding(translation)
 import Physics.Falling.Math.Transform
 import Physics.Falling.Shape.Ball
 import Physics.Falling.Collision.Collision

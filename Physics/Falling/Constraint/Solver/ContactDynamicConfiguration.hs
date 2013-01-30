@@ -5,7 +5,6 @@ ContactDynamicConfiguration(..)
 )
 where
 
-import Data.Vect.Double.Base
 import Physics.Falling.Dynamics.InertiaTensor
 import Physics.Falling.Math.Transform
 

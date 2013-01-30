@@ -8,7 +8,6 @@ ImplicitShape(..)
 )
 where
 
-import Data.Vect.Double.Base
 import Physics.Falling.Math.Transform
 
 class (Vector v) => ImplicitShape g v | g -> v where

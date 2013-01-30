@@ -7,7 +7,7 @@ Positionable(..)
 )
 where
 
-import Data.Vect.Double.Base
+import Physics.Falling.Math.Transform hiding(translate)
 import qualified Physics.Falling.Math.Transform as T
 
 class (T.TransformSystem t v av) => Positionable p t v av | p -> t where

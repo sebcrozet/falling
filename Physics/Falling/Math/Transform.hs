@@ -3,7 +3,8 @@
 
 module Physics.Falling.Math.Transform
 (
-DeltaTransform(..)
+module Data.Vect.Double.Base
+, DeltaTransform(..)
 , Translation(..)
 , Rotation(..)
 , Transform(..)
@@ -34,6 +35,12 @@ class (DeltaTransform p v, Vector v, Translation p v) => Transform p v where
 class (Vector v, Vector a) => PerpProd v a | v -> a where
   perp :: v -> v -> a
 
-class (MultSemiGroup p, Matrix p, DeltaTransform p v, Rotation p a, Transform p v,
-       PerpProd v a, DotProd v, DotProd a) =>
+class (DeltaTransform p v
+       , Rotation       p a
+       , Transform      p v
+       , PerpProd       v a
+       , MultSemiGroup  p
+       , Matrix         p
+       , DotProd        v
+       , DotProd        a) =>
       TransformSystem p v a

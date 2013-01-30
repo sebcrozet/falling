@@ -7,7 +7,7 @@ ShapeReflection(..)
 )
 where
 
-import Data.Vect.Double.Base
+import Physics.Falling.Math.Transform
 import Physics.Falling.Shape.ImplicitShape
 
 newtype (ImplicitShape g v) => ShapeReflection g v = ShapeReflection g

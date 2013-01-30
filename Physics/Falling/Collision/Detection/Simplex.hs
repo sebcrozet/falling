@@ -11,7 +11,7 @@ Simplex
 )
 where
 
-import Data.Vect.Double.Base
+import Physics.Falling.Math.Transform
 
 data (DotProd v, Vector v) => Simplex v = Simplex [ v ]
 

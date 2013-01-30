@@ -8,7 +8,7 @@ InertiaTensor(..)
 )
 where
 
-import Data.Vect.Double.Base
+import Physics.Falling.Math.Transform
 
 class (Vector v, InverseInertiaTensor ii v t) =>
        InertiaTensor i ii v t | t -> i, i -> v, i -> t, i -> ii  where

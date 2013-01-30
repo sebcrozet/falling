@@ -1,7 +1,7 @@
 module Physics.Falling.Shape.Plane
 where
 
-import Data.Vect.Double.Base
+import Physics.Falling.Math.Transform
 
 newtype (Vector v) => Plane v = Plane v
                                 deriving(Show)

@@ -4,7 +4,6 @@ solveConstraintsIsland
 )
 where
 
-import Data.Vect.Double.Base
 import Physics.Falling.Math.Transform
 import Physics.Falling.Collision.Collision
 import Physics.Falling.Shape.VolumetricShape

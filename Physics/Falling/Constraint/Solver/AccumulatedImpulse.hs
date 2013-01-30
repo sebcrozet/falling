@@ -5,7 +5,6 @@ solveConstraintsIsland
 where
 
 import Control.Monad.ST
-import Data.Vect.Double.Base hiding(translation)
 import qualified Data.Vector as V
 import Data.Vector.Mutable hiding(length) -- FIXME: use unboxed vectors instead (implement instances for Unbox VecN)
 import Physics.Falling.Math.Transform

@@ -9,7 +9,7 @@ Ball(..)
 )
 where
 
-import Data.Vect.Double.Base
+import Physics.Falling.Math.Transform
 import Physics.Falling.Shape.ImplicitShape
 
 newtype Vector v => Ball v = Ball Double

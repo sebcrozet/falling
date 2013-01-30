@@ -8,7 +8,7 @@ CollisionDetectionAlgorithm(..)
 where
 
 import Data.Maybe
-import Data.Vect.Double.Base
+import Physics.Falling.Math.Transform
 import Physics.Falling.Collision.Collision
 
 class (UnitVector v n) => CollisionDetectionAlgorithm a t v n | v -> n,

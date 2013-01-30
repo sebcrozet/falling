@@ -10,7 +10,6 @@ AnnotatedVector(..)
 )
 where
 
-import Data.Vect.Double.Base hiding(translation)
 import Physics.Falling.Math.Transform
 
 data AnnotatedVector v a = AnnotatedVector v a
