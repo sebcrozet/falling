@@ -72,7 +72,6 @@ addEquation dt bodies shift (BibodyCollision  id1 id2 coll _) sys =
 
 -- FIXME: also generate equations for friction
 -- FIXME: handle restitution
--- FIXME: handle penetration correction
 configureContact :: (Dynamic rb t lv av ii, UnitVector lv n) =>
                     Double -> rb -> CollisionDescr lv n -> Bool -> ContactDynamicConfiguration lv av
 configureContact dt rb (CollisionDescr c n _) invN =
@@ -96,7 +95,7 @@ solveSystem niter dt bodies shift sys = case solve niter sys of
                                         Nothing             -> bodies
                                         Just (lvect, avect) -> integrate dt bodies lvect avect shift
 
--- NOTE: this step will fail with an index out of range if a body without collision is in the
+-- Note: this step will fail with an index out of range if a body without collision is in the
 -- system
 integrate :: (Dynamic rb t lv av ii) =>
              Double -> [ (Int, rb) ] -> V.Vector lv -> V.Vector av -> Int -> [ (Int, rb) ]

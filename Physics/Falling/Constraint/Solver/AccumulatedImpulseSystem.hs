@@ -33,9 +33,10 @@ data Equation lv av = UnibodyEquation {
                         , invTotalInvInertia :: Double
                         , lowLimit           :: Double
                         , higLimit           :: Double
-                      }
+                      } deriving(Show)
 
 data AccumulatedImpulseSystem lv av = AccumulatedImpulseSystem Int [ Equation lv av ]
+                                      deriving(Show)
 
 emptySystem :: AccumulatedImpulseSystem lv av
 emptySystem = AccumulatedImpulseSystem 0 []
@@ -55,7 +56,7 @@ addSingleBodyEquation conf idx lLimit hLimit err (AccumulatedImpulseSystem mid i
                                       , configuration      = conf
                                       , velocityCorrection = -(linearVelocity conf + angularVelocity conf)
                                                              + 0.4 * (max 0.0 $ err - 0.01)
-                                      , invTotalInvInertia = 1.0 / (inverseLinearInertia conf +
+                                      , invTotalInvInertia = 1.0 / (inverseLinearInertia   conf +
                                                                     inverseInertiaMomentum conf)
                                       , lowLimit           = lLimit
                                       , higLimit           = hLimit
@@ -116,8 +117,8 @@ solveST niter (AccumulatedImpulseSystem mid impulseSystem) =
                 av1 <- M.read aVect id1
                 lv2 <- M.read lVect id2
                 av2 <- M.read aVect id2
-                let (lv1', av1', lv2', av2', imp') = solveBibodyConstraint lv1 av1 ld1 ad1 il1 ia1
-                                                                           lv2 av2 ld2 ad2 il2 ia2
+                let (lv1', av1', lv2', av2', imp') = solveBibodyConstraint lv1 av1 ld1 ad1 wld1 wad1
+                                                                           lv2 av2 ld2 ad2 wld2 wad2
                                                                            iti vc  lb  ub  imp
                 _ <- M.write impVect i imp'
                 _ <- M.write lVect id1 lv1'
@@ -126,28 +127,28 @@ solveST niter (AccumulatedImpulseSystem mid impulseSystem) =
                 _ <- M.write aVect id2 av2'
                 return ()
                 where
-                ld1   = linearDirection conf1
-                ad1   = angularDirection conf1
-                il1   = inverseLinearInertia conf1
-                ia1   = inverseInertiaMomentum conf1
-                ld2   = linearDirection conf2
-                ad2   = angularDirection conf2
-                il2   = inverseLinearInertia conf2
-                ia2   = inverseInertiaMomentum conf2
+                ld1  = linearDirection          conf1
+                ad1  = angularDirection         conf1
+                wld1 = weightedLinearDirection  conf1
+                wad1 = weightedAngularDirection conf1
+                ld2  = linearDirection          conf2
+                ad2  = angularDirection         conf2
+                wld2 = weightedLinearDirection  conf2
+                wad2 = weightedAngularDirection conf2
               UnibodyEquation  ie conf vc iti lb ub -> do
                 lv <- M.read lVect ie
                 av <- M.read aVect ie
-                let (lv', av', imp') = solveUnibodyConstraint lv  av ld ad il  ia
+                let (lv', av', imp') = solveUnibodyConstraint lv  av ld ad wld wad
                                                               iti vc lb ub imp
                 _ <- M.write impVect i  imp'
                 _ <- M.write lVect   ie lv'
                 _ <- M.write aVect   ie av'
                 return ()
                 where
-                ld   = linearDirection conf
-                ad   = angularDirection conf
-                il   = inverseLinearInertia conf
-                ia   = inverseInertiaMomentum conf))
+                ld  = linearDirection          conf
+                ad  = angularDirection         conf
+                wld = weightedLinearDirection  conf
+                wad = weightedAngularDirection conf))
         reslVect <- V.unsafeFreeze lVect
         resaVect <- V.unsafeFreeze aVect
 
@@ -156,10 +157,10 @@ solveST niter (AccumulatedImpulseSystem mid impulseSystem) =
 solveBibodyConstraint :: (Vector lv, Vector av, DotProd lv, DotProd av) =>
                          lv -> av ->
                          lv -> av ->
-                         Double -> Double ->
                          lv -> av ->
                          lv -> av ->
-                         Double -> Double ->
+                         lv -> av ->
+                         lv -> av ->
                          Double ->
                          Double ->
                          Double -> Double ->
@@ -167,26 +168,26 @@ solveBibodyConstraint :: (Vector lv, Vector av, DotProd lv, DotProd av) =>
                          (lv, av, lv, av, Double)
 solveBibodyConstraint linearVelocity1   angularVelocity1 
                       linearDirection1  angularDirection1 
-                      invLinearInertia1 invAngularInertia1
+                      wlinearDirection1 wangularDirection1 
                       linearVelocity2   angularVelocity2 
                       linearDirection2  angularDirection2 
-                      invLinearInertia2 invAngularInertia2
+                      wlinearDirection2 wangularDirection2 
                       invTotalInertia
                       totalVelocityCorrection
                       impulseLowerBound impulseUpperBound
                       accumulatedImpulse =
                       (
-                        linearVelocity1  &+ linearDirection1  &* correctiveImpulse,
-                        angularVelocity1 &+ angularDirection1 &* correctiveImpulse,
-                        linearVelocity2  &+ linearDirection2  &* correctiveImpulse,
-                        angularVelocity2 &+ angularDirection2 &* correctiveImpulse,
-                        newAccumulatedImpulse
+                        linearVelocity1    &+ linearDirection1  &* correctiveImpulse
+                        , angularVelocity1 &+ angularDirection1 &* correctiveImpulse
+                        , linearVelocity2  &+ linearDirection2  &* correctiveImpulse
+                        , angularVelocity2 &+ angularDirection2 &* correctiveImpulse
+                        , newAccumulatedImpulse
                       )
                       where
-                      deltaVelocity = invLinearInertia1  * (linearDirection1  &. linearVelocity1)  +
-                                      invAngularInertia1 * (angularDirection1 &. angularVelocity1) +
-                                      invLinearInertia2  * (linearDirection2  &. linearVelocity2)  +
-                                      invAngularInertia2 * (angularDirection2 &. angularDirection2);
+                      deltaVelocity = (wlinearDirection1  &. linearVelocity1)  +
+                                      (wangularDirection1 &. angularVelocity1) +
+                                      (wlinearDirection2  &. linearVelocity2)  +
+                                      (wangularDirection2 &. angularVelocity2);
                       (newAccumulatedImpulse, correctiveImpulse) = solveClamp deltaVelocity
                                                                               totalVelocityCorrection
                                                                               invTotalInertia
@@ -197,7 +198,7 @@ solveBibodyConstraint linearVelocity1   angularVelocity1
 solveUnibodyConstraint :: (Vector lv, Vector av, DotProd lv, DotProd av) =>
                           lv -> av ->
                           lv -> av ->
-                          Double -> Double ->
+                          lv -> av ->
                           Double ->
                           Double ->
                           Double -> Double ->
@@ -205,19 +206,19 @@ solveUnibodyConstraint :: (Vector lv, Vector av, DotProd lv, DotProd av) =>
                           (lv, av, Double)
 solveUnibodyConstraint linVel           angVel
                        linDir           angDir
-                       invLinearInertia invAngularInertia
+                       wlinDir          wangDir
                        invTotalInertia
                        totalVelocityCorrection
                        impulseLowerBound impulseUpperBound
                        accumulatedImpulse =
                        (
-                         linVel &+ linDir &* correctiveImpulse,
-                         angVel &+ angDir &* correctiveImpulse,
-                         newAccumulatedImpulse
+                         linVel   &+ linDir &* correctiveImpulse
+                         , angVel &+ angDir &* correctiveImpulse
+                         , newAccumulatedImpulse
                        )
                        where
-                       deltaVelocity = invLinearInertia  * (linDir &. linVel)  +
-                                       invAngularInertia * (angDir &. angVel)
+                       deltaVelocity = (wlinDir &. linVel)  +
+                                       (wangDir &. angVel)
                        (newAccumulatedImpulse, correctiveImpulse) = solveClamp deltaVelocity
                                                                                totalVelocityCorrection
                                                                                invTotalInertia
