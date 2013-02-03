@@ -38,9 +38,8 @@ integrateBodyVelocity dt b = setVelocities newVels b
 
 displacement :: (Vector lv, Vector av, TransformSystem m lv av) =>
                  Double -> lv -> av -> m -> m
-displacement dt linVel angVel originalMatrix = translate   (dt *& linVel &+ originalTranslation)
-                                               $ rotate    (dt *& angVel)
-                                               $ translate (neg $ originalTranslation)
+displacement dt linVel angVel originalMatrix = translate (dt *& linVel)
+                                               $ rotateWrtPoint (dt *& angVel) originalTranslation
                                                $ idmtx
                                                where
                                                originalTranslation = translation originalMatrix

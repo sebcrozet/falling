@@ -30,4 +30,4 @@ class (T.TransformSystem t v av) => Positionable p t v av | p -> t where
   prependTransform t p = setLocalToWorld (t .*. getLocalToWorld p) p
   appendTransform  t p = setLocalToWorld (getLocalToWorld p .*. t) p
   translate        t p = setLocalToWorld (T.translate t $ getLocalToWorld p) p
-  rotate           w p = setLocalToWorld (T.rotate w $ getLocalToWorld p) p
+  rotate           w p = setLocalToWorld (T.rotateWrtCenter w $ getLocalToWorld p) p

@@ -10,6 +10,8 @@ module Data.Vect.Double.Base
 , Transform(..)
 , TransformSystem
 , PerpProd(..)
+, rotateWrtPoint
+, rotateWrtCenter
 )
 where
 
@@ -25,8 +27,14 @@ class Translation p v | p -> v where
   translate    :: v -> p -> p
 
 class Rotation p r | p -> r where
-  -- rotation :: p -> r
   rotate   :: r -> p -> p
+
+rotateWrtPoint :: (AbelianGroup v, Rotation p r, Translation p v) => r -> v -> p -> p
+rotateWrtPoint ang point = translate point . rotate ang . translate (neg point)
+
+rotateWrtCenter :: (AbelianGroup v, Rotation p r, Translation p v) => r -> p -> p
+rotateWrtCenter ang p = rotateWrtPoint ang (translation p) p
+
 
 class (DeltaTransform p v, Vector v, Translation p v) => Transform p v where
   transform :: p -> v -> v
