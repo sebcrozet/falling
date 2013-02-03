@@ -13,27 +13,29 @@ import Physics.Falling.Shape.ShapeWithMargin
 import Physics.Falling.Shape.CSO
 import Physics.Falling.Collision.Detection.GJK
 
-approximatePenetration:: (ImplicitShape g1 v,
-                          ImplicitShape g2 v,
-                          Transform     m  v,
-                          UnitVector    v  n,
-                          Fractional    v,
-                          UnitSphere    n,
-                          Eq            v) =>
-                          (g1, m, m) -> (g2, m, m) -> Int -> Int -> Maybe (Double, v, v)
-approximatePenetration s1 s2 numSamples dimension =
-                       approximatePenetrationWithDirections s1 s2 (nUnitSphereSamples numSamples) dimension
+approximatePenetration:: (Dimension     v
+                          , ImplicitShape g1 v
+                          , ImplicitShape g2 v
+                          , Transform     m  v
+                          , UnitVector    v  n
+                          , Fractional    v
+                          , UnitSphere    n
+                          , Eq            v) =>
+                          (g1, m, m) -> (g2, m, m) -> Int -> Maybe (Double, v, v)
+approximatePenetration s1 s2 numSamples =
+                       approximatePenetrationWithDirections s1 s2 (nUnitSphereSamples numSamples)
 
-approximatePenetrationWithDirections :: (ImplicitShape g1 v,
-                                         ImplicitShape g2 v,
-                                         Transform     m  v,
-                                         UnitVector    v  n,
-                                         Fractional    v,
-                                         Eq            v) =>
-                                         (g1, m, m) -> (g2, m, m) -> [ n ] -> Int -> Maybe (Double, v, v)
-approximatePenetrationWithDirections s1@(g1, t1, it1) (g2, t2, it2) dirs dimension = 
+approximatePenetrationWithDirections :: (Dimension     v
+                                         , ImplicitShape g1 v
+                                         , ImplicitShape g2 v
+                                         , Transform     m  v
+                                         , UnitVector    v  n
+                                         , Fractional    v
+                                         , Eq            v) =>
+                                         (g1, m, m) -> (g2, m, m) -> [ n ] -> Maybe (Double, v, v)
+approximatePenetrationWithDirections s1@(g1, t1, it1) (g2, t2, it2) dirs = 
   if candidateDepth < 0.0 then
-    Nothing
+    error "Internal error: impossible candidateDepth"
   else
     Just (depth, p1', p2' &- shift')
   where
@@ -46,10 +48,8 @@ approximatePenetrationWithDirections s1@(g1, t1, it1) (g2, t2, it2) dirs dimensi
   shift         = canditateNormal &* candidateDepth
   Just (p1, p2) = closestPoints s1
                                 (g2, translate shift t2, translate (neg shift) it2)
-                                dimension
   finalNormal     = fromNormal $ mkNormal $ p2 &- p1
   depth           = finalNormal &. supportPoint cso finalNormal
   shift'          = finalNormal &* depth
   Just (p1', p2') = closestPoints s1
                                   (g2, translate shift' t2, translate (neg shift') it2)
-                                  dimension

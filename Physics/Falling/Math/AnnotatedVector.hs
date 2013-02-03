@@ -43,6 +43,9 @@ instance (AbelianGroup v) => AbelianGroup (AnnotatedVector v a) where
 instance (DotProd v) => DotProd (AnnotatedVector v a) where
   AnnotatedVector v _ &. AnnotatedVector v' _ = v &. v'
 
+instance (Dimension v) => Dimension (AnnotatedVector v a) where
+  dim (AnnotatedVector v _) = dim v
+
 instance (UnitVector v n) =>
          UnitVector (AnnotatedVector v a) (AnnotatedVector n a) where
          mkNormal       (AnnotatedVector v a) = AnnotatedVector (mkNormal v)       a

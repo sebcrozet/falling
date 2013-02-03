@@ -20,23 +20,29 @@ import qualified Physics.Falling.Collision.Detection.Simplex as S (dimension)
 type SimplexResult v = Either (v, [ Double ], Simplex v, Simplex v) -- need more iterations
                               (v, [ Double ], Simplex v)            -- success
 
-initialSimplexResult :: (Vector v, DotProd v) => v -> SimplexResult v
+initialSimplexResult :: (Dimension v, Vector v, DotProd v) => v -> SimplexResult v
 initialSimplexResult initialPoint = Left (initialPoint, [], emptySimplex, emptySimplex)
 
-distance :: (ImplicitShape g1 v, ImplicitShape g2 v, Transform m v, UnitVector v n, Eq v, Fractional v) =>
-            (g1, m, m) -> (g2, m, m) -> Int -> Double
-distance s1@(_, t1, _) s2@(_, t2, _) dimension =
-         distanceToOrigin cso (neg notZeroDirection) dimension
+distance :: (Dimension v, ImplicitShape g1 v, ImplicitShape g2 v, Transform m v, UnitVector v n, Eq v, Fractional v) =>
+            (g1, m, m) -> (g2, m, m) -> Double
+distance s1@(_, t1, _) s2@(_, t2, _) =
+         distanceToOrigin cso (neg notZeroDirection)
          where
          cso              = mkCSOWithTransforms s1 s2
          initialDirection = translation t1 &- translation t2
          notZeroDirection = if lensqr initialDirection /= 0.0 then initialDirection
                                                               else 1.0
 
-closestPoints :: (ImplicitShape g1 v, ImplicitShape g2 v, Transform m v, UnitVector v n, Eq v, Fractional v) =>
-                 (g1, m, m) -> (g2, m, m) -> Int -> Maybe (v, v)
-closestPoints s1@(_, t1, _) s2@(_, t2, _) dimension =
-              case algorithmGJK cso dimension $ initialSimplexResult initialPoint of
+closestPoints :: (Dimension     v
+                  , ImplicitShape g1 v
+                  , ImplicitShape g2 v
+                  , Transform     m  v
+                  , UnitVector    v  n
+                  , Eq            v
+                  , Fractional    v) =>
+                 (g1, m, m) -> (g2, m, m) -> Maybe (v, v)
+closestPoints s1@(_, t1, _) s2@(_, t2, _) =
+              case algorithmGJK cso $ initialSimplexResult initialPoint of
               Nothing        -> Nothing
               Just (_, b, s) -> Just $ _pointsFromAnnotatedSimplex b s 
               where
@@ -46,23 +52,24 @@ closestPoints s1@(_, t1, _) s2@(_, t2, _) dimension =
                                                                    else 1.0
               initialPoint     = supportPoint cso (AnnotatedVector notZeroDirection undefined)
 
-distanceToOrigin :: (ImplicitShape g v, Eq v, DotProd v, Fractional v) =>
-                    g -> v -> Int -> Double
-distanceToOrigin s initialDirection dimension =
-                 case algorithmGJK s dimension $ initialSimplexResult initialPoint of
+distanceToOrigin :: (Dimension v, ImplicitShape g v, Eq v, DotProd v, Fractional v) =>
+                    g -> v -> Double
+distanceToOrigin s initialDirection =
+                 case algorithmGJK s $ initialSimplexResult initialPoint of
                  Nothing                 -> 0.0
                  Just (projection, _, _) -> len projection
                  where
                  initialPoint     = supportPoint s initialDirection
 
-algorithmGJK :: (ImplicitShape g v, Eq v, DotProd v) =>
-                g -> Int -> SimplexResult v -> Maybe (v, [ Double ], Simplex v)
-algorithmGJK s dimension (Left (projection, barCoords, lastSimplex, newSimplex))
+algorithmGJK :: (Dimension v, ImplicitShape g v, Eq v, DotProd v) =>
+                g -> SimplexResult v -> Maybe (v, [ Double ], Simplex v)
+algorithmGJK s (Left (projection, barCoords, lastSimplex, newSimplex))
              | sDim /= 0 && (sDim == dimension + 1 || lensqr projection <= epsTol * maxLen newSimplex) = Nothing
-             | otherwise = algorithmGJK s dimension $ _stepGJK s lastSimplex newSimplex projection barCoords
+             | otherwise = algorithmGJK s $ _stepGJK s lastSimplex newSimplex projection barCoords
              where
-             sDim = S.dimension newSimplex
-algorithmGJK _ _ (Right (projection, barCoords, simplex)) = 
+             sDim      = S.dimension newSimplex
+             dimension = dim projection
+algorithmGJK _ (Right (projection, barCoords, simplex)) = 
              Just (projection, barCoords, simplex)
 
 _stepGJK :: (ImplicitShape g v, Eq v, DotProd v) =>
