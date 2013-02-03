@@ -12,10 +12,15 @@ import Physics.Falling.Collision.Collision
 collidePlaneImplicitShape :: (ImplicitShape  g  v
                               , Transform    m  v
                               , UnitVector   v  n) =>
-                             Plane v -> g -> m -> m -> Maybe (CollisionDescr v n)
-collidePlaneImplicitShape (Plane upVec) other planeTransform otherTransform =
+                             (Plane v, m, m) -> (g, m, m) -> Maybe (CollisionDescr v n)
+collidePlaneImplicitShape ((Plane upVec), planeTransform, planeInvTransform)
+                          (other, otherTransform, otherInvTransform) =
                           if d > 0.0 then
-                            Just $ CollisionDescr c n d
+                            Just $ mkCollisionDescrWithCenter planeInvTransform
+                                                              otherInvTransform
+                                                              c
+                                                              n
+                                                              d
                           else
                             Nothing
                           where

@@ -10,6 +10,7 @@ Cabal-Version:   >=1.2
 
 Library
   exposed-modules: Physics.Falling.Collision.Collision
+                   Physics.Falling.Collision.Detection.IncrementalContactManifold
                    Physics.Falling.Collision.Detection.BroadPhase
                    Physics.Falling.Collision.Detection.BruteForceBroadPhase
                    Physics.Falling.Collision.Detection.NarrowPhase

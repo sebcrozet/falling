@@ -3,9 +3,12 @@ module Physics.Falling.Collision.Collision
 CollisionDescr(..)
 , Collision(..)
 , ContactManifold
+, contactManifoldGeometries
 , collisionDescr2UnibodyCollision
 , collisionDescr2BibodyCollision
 , revertCollisionDescr
+, mkCollisionDescrWithCenter
+, mkCollisionDescrWithPoints
 )
 where
 
@@ -14,6 +17,8 @@ import Physics.Falling.Math.Transform
 data (Vector v, UnitVector v n) => CollisionDescr v n = CollisionDescr
                                                         {
                                                           contactCenter      :: v
+                                                          , localContact1    :: v
+                                                          , localContact2    :: v
                                                           , contactNormal    :: n
                                                           , penetrationDepth :: Double
                                                         } deriving(Show)
@@ -22,18 +27,24 @@ data (Vector v, UnitVector v n) => Collision v n = UnibodyCollision
                                                    {
                                                      bodyIndex           :: Int
                                                      , collisionGeometry :: CollisionDescr v n
-                                                     , impulseCash       :: Double
+                                                     , impulseCash       :: Double -- FIXME: remove that?
                                                    }
                                                    | BibodyCollision
                                                    {
                                                      bodyIndex1          :: Int
                                                      , bodyIndex2        :: Int
                                                      , collisionGeometry :: CollisionDescr v n
-                                                     , impulseCash       :: Double
+                                                     , impulseCash       :: Double -- FIXME: remove that?
                                                    }
                                                    deriving(Show)
 
 type ContactManifold v n = [ Collision v n ]
+
+contactManifoldGeometries :: (Vector v, UnitVector v n) => ContactManifold v n -> [CollisionDescr v n]
+contactManifoldGeometries = map extractCollisionGeometry
+                            where
+                            extractCollisionGeometry (UnibodyCollision _ cd _)    = cd
+                            extractCollisionGeometry (BibodyCollision  _ _  cd _) = cd
 
 collisionDescr2UnibodyCollision :: (Vector v, UnitVector v n) =>
                                    Int -> CollisionDescr v n -> Collision v n
@@ -44,4 +55,13 @@ collisionDescr2BibodyCollision :: (Vector v, UnitVector v n) =>
 collisionDescr2BibodyCollision id1 id2 c = BibodyCollision id1 id2 c 0.0
 
 revertCollisionDescr :: (Vector v, UnitVector v n) => CollisionDescr v n -> CollisionDescr v n
-revertCollisionDescr (CollisionDescr v n d) = CollisionDescr v (toNormalUnsafe $ neg $ fromNormal n) d
+revertCollisionDescr (CollisionDescr v lv1 lv2 n d) = CollisionDescr v lv2 lv1 (toNormalUnsafe $ neg $ fromNormal n) d
+
+mkCollisionDescrWithCenter :: (Vector v, UnitVector v n, Transform m v) =>
+                              m -> m -> v -> n -> Double -> CollisionDescr v n
+mkCollisionDescrWithCenter it1 it2 pt normal depth =
+                           CollisionDescr pt (it1 `transform` pt) (it2 `transform` pt) normal depth
+
+mkCollisionDescrWithPoints :: (Vector v, UnitVector v n, Transform m v) =>
+                              m -> m -> v -> v -> n -> Double -> CollisionDescr v n
+mkCollisionDescrWithPoints it1 it2 pt1 pt2 = mkCollisionDescrWithCenter it1 it2 ((pt1 &+ pt2) &* 0.5)

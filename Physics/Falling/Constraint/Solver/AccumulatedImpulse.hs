@@ -118,7 +118,7 @@ secondOrderErrorEstimator penDepth = max 0.0 $ (min margin penDepth) - 0.01
 
 secondOrderWorldContact :: (Dynamic rb t lv av ii, UnitVector lv n) =>
                            Double -> rb -> CollisionDescr lv n -> Bool -> ContactDynamicConfiguration lv av
-secondOrderWorldContact dt rb (CollisionDescr c n _) invN =
+secondOrderWorldContact dt rb (CollisionDescr c _ _ n _) invN =
                         contactConfiguration (translation $ getLocalToWorld rb)
                                              (getLinearVelocity  rb &+ dt *& getExternalLinearForce rb)
                                              (getAngularVelocity rb &+ dt *& getExternalAngularForce rb)
@@ -129,7 +129,7 @@ secondOrderWorldContact dt rb (CollisionDescr c n _) invN =
 
 firstOrderWorldContact :: (Dynamic rb t lv av ii, UnitVector lv n) =>
                           Double -> rb -> CollisionDescr lv n -> Bool -> ContactDynamicConfiguration lv av
-firstOrderWorldContact _ rb (CollisionDescr c n _) invN =
+firstOrderWorldContact _ rb (CollisionDescr c _ _ n _) invN =
                        contactConfiguration (translation $ getLocalToWorld rb)
                                             zero
                                             zero

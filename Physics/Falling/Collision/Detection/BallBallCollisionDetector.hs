@@ -14,6 +14,8 @@ collideBallBall :: (Translation m v, UnitVector v n) =>
 collideBallBall (Ball r1) (Ball r2) transform1 transform2 =
                                             if sqDist <= (r1 + r2) ** 2.0 then
                                               Just $ CollisionDescr collisionCenter
+                                                                    undefined
+                                                                    undefined
                                                                     collisionNormal
                                                                     depth
                                             else
