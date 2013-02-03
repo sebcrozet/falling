@@ -20,7 +20,8 @@ import Data.Vect.Double.Base hiding(translation)
 -- FIXME: rename this module with something more descriptive
 
 class DeltaTransform p v where
-  deltaTransform :: p -> v -> v
+  deltaTransform          :: p -> v -> v
+  deltaTransformTranspose :: p -> v -> v
 
 class Translation p v | p -> v where
   translation  :: p -> v

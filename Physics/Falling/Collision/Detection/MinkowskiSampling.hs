@@ -21,7 +21,7 @@ approximatePenetration:: (Dimension     v
                           , Fractional    v
                           , UnitSphere    n
                           , Eq            v) =>
-                          (g1, m, m) -> (g2, m, m) -> Int -> Maybe (Double, v, v)
+                          (g1, m) -> (g2, m) -> Int -> Maybe (Double, v, v)
 approximatePenetration s1 s2 numSamples =
                        approximatePenetrationWithDirections s1 s2 (nUnitSphereSamples numSamples)
 
@@ -32,8 +32,8 @@ approximatePenetrationWithDirections :: (Dimension     v
                                          , UnitVector    v  n
                                          , Fractional    v
                                          , Eq            v) =>
-                                         (g1, m, m) -> (g2, m, m) -> [ n ] -> Maybe (Double, v, v)
-approximatePenetrationWithDirections s1@(g1, t1, it1) (g2, t2, it2) dirs = 
+                                         (g1, m) -> (g2, m) -> [ n ] -> Maybe (Double, v, v)
+approximatePenetrationWithDirections s1@(g1, t1) (g2, t2) dirs = 
   if candidateDepth < 0.0 then
     error "Internal error: impossible candidateDepth"
   else
@@ -41,15 +41,13 @@ approximatePenetrationWithDirections s1@(g1, t1, it1) (g2, t2, it2) dirs =
   where
   mg1           = ShapeWithMargin g1 -- FIXME: margins will be affected by scaling
   mg2           = ShapeWithMargin g2 -- FIXME: margins will be affected by scaling
-  cso           = mkCSOWithTransforms (mg1, t1, it1) (mg2, t2, it2)
+  cso           = mkCSOWithTransforms (mg1, t1) (mg2, t2)
   (canditateNormal, candidateDepth) = minimumBy (\a b -> compare (snd a) (snd b))
                                       $ map (\d -> let dv = fromNormal d in (dv, supportPoint cso dv &. dv))
                                         dirs
   shift         = canditateNormal &* candidateDepth
-  Just (p1, p2) = closestPoints s1
-                                (g2, translate shift t2, translate (neg shift) it2)
+  Just (p1, p2) = closestPoints s1 (g2, translate shift t2)
   finalNormal     = fromNormal $ mkNormal $ p2 &- p1
   depth           = finalNormal &. supportPoint cso finalNormal
   shift'          = finalNormal &* depth
-  Just (p1', p2') = closestPoints s1
-                                  (g2, translate shift' t2, translate (neg shift') it2)
+  Just (p1', p2') = closestPoints s1 (g2, translate shift' t2)

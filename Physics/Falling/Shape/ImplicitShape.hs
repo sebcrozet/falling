@@ -15,5 +15,5 @@ class (Vector v) => ImplicitShape g v | g -> v where
 
 supportPointWithTransform :: (ImplicitShape  g v
                               , Transform    m v)
-                          => g -> v -> m -> m -> v
-supportPointWithTransform g dir t it = t `transform` supportPoint g (it `deltaTransform` dir)
+                          => g -> v -> m -> v
+supportPointWithTransform g dir t = t `transform` supportPoint g (t `deltaTransformTranspose` dir)

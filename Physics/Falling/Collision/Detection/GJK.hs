@@ -24,8 +24,8 @@ initialSimplexResult :: (Dimension v, Vector v, DotProd v) => v -> SimplexResult
 initialSimplexResult initialPoint = Left (initialPoint, [], emptySimplex, emptySimplex)
 
 distance :: (Dimension v, ImplicitShape g1 v, ImplicitShape g2 v, Transform m v, UnitVector v n, Eq v, Fractional v) =>
-            (g1, m, m) -> (g2, m, m) -> Double
-distance s1@(_, t1, _) s2@(_, t2, _) =
+            (g1, m) -> (g2, m) -> Double
+distance s1@(_, t1) s2@(_, t2) =
          distanceToOrigin cso (neg notZeroDirection)
          where
          cso              = mkCSOWithTransforms s1 s2
@@ -40,8 +40,8 @@ closestPoints :: (Dimension     v
                   , UnitVector    v  n
                   , Eq            v
                   , Fractional    v) =>
-                 (g1, m, m) -> (g2, m, m) -> Maybe (v, v)
-closestPoints s1@(_, t1, _) s2@(_, t2, _) =
+                 (g1, m) -> (g2, m) -> Maybe (v, v)
+closestPoints s1@(_, t1) s2@(_, t2) =
               case algorithmGJK cso $ initialSimplexResult initialPoint of
               Nothing        -> Nothing
               Just (_, b, s) -> Just $ _pointsFromAnnotatedSimplex b s 

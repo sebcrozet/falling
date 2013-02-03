@@ -21,8 +21,8 @@ collideImplicitShapeImplicitShape :: (Dimension       v
                                       , Eq            v
                                       , UnitSphere    n) =>
                                      (g1, m, m) -> (g2, m, m) -> Int -> Maybe (CollisionDescr v n)
-collideImplicitShapeImplicitShape s1 s2 numSamples =
-                                  case closestPoints s1 s2 of
+collideImplicitShapeImplicitShape (g1, t1, _) (g2, t2, _) numSamples =
+                                  case closestPoints (g1, t1) (g2, t2) of
                                   Just    (p1, p2) -> if ldp > 2.0 * margin then
                                                         Nothing
                                                       else
@@ -32,7 +32,7 @@ collideImplicitShapeImplicitShape s1 s2 numSamples =
                                                         where
                                                         dp  = p2 &- p1
                                                         ldp = len dp
-                                  Nothing          ->  _deepPenetration s1 s2 numSamples
+                                  Nothing          ->  _deepPenetration (g1, t1) (g2, t2) numSamples
 
 
 _deepPenetration :: (Dimension       v
@@ -43,7 +43,7 @@ _deepPenetration :: (Dimension       v
                      , Fractional    v
                      , Eq            v
                      , UnitSphere    n) =>
-                    (g1, m, m) -> (g2, m, m) -> Int -> Maybe (CollisionDescr v n)
+                    (g1, m) -> (g2, m) -> Int -> Maybe (CollisionDescr v n)
 _deepPenetration s1 s2 numSamples =
                  case approximatePenetration s1 s2 numSamples of
                  Nothing              -> error "Internal error: penetration should have been computed at this point."

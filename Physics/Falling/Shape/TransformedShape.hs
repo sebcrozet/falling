@@ -10,8 +10,8 @@ where
 import Physics.Falling.Math.Transform
 import Physics.Falling.Shape.ImplicitShape
 
-data (ImplicitShape g v, Transform t v) => TransformedShape g t v = TransformedShape g t t
+data (ImplicitShape g v, Transform t v) => TransformedShape g t v = TransformedShape g t
                                                                     deriving(Show)
 
 instance (ImplicitShape g v, Transform t v) => ImplicitShape (TransformedShape g t v) v where
-  supportPoint (TransformedShape g t it) dir = supportPointWithTransform g dir t it
+  supportPoint (TransformedShape g t) dir = supportPointWithTransform g dir t

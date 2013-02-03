@@ -11,10 +11,9 @@ import Physics.Falling.Collision.Collision
 
 collidePlaneImplicitShape :: (ImplicitShape  g  v
                               , Transform    m  v
-                              , Transform    mp v
                               , UnitVector   v  n) =>
-                             Plane v -> g -> mp -> m -> m -> Maybe (CollisionDescr v n)
-collidePlaneImplicitShape (Plane upVec) other planeTransform otherTransform inverseOtherTransform =
+                             Plane v -> g -> m -> m -> Maybe (CollisionDescr v n)
+collidePlaneImplicitShape (Plane upVec) other planeTransform otherTransform =
                           if d > 0.0 then
                             Just $ CollisionDescr c n d
                           else
@@ -26,7 +25,6 @@ collidePlaneImplicitShape (Plane upVec) other planeTransform otherTransform inve
                           deepestPoint   = supportPointWithTransform other
                                                                      invPlaneNormal
                                                                      otherTransform
-                                                                     inverseOtherTransform
                           n              = planeNormal
                           c              = (deepestPoint &+ fromNormal planeNormal &* (d * 0.5))
                           d              = (planeCenter  &- deepestPoint) &. fromNormal planeNormal
