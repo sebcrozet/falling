@@ -19,10 +19,10 @@ integrateBodyPosition :: (Dynamic b t lv av ii) =>
                          Double -> b -> b
 integrateBodyPosition dt b = appendTransform displacementMatrix b
                              where
-                             l2w                = getLocalToWorld b
+                             l2w                = localToWorld b
                              displacementMatrix = displacement dt
-                                                               (getLinearVelocity  b)
-                                                               (getAngularVelocity b)
+                                                               (linearVelocity  b)
+                                                               (angularVelocity b)
                                                                l2w
 
 
@@ -30,10 +30,10 @@ integrateBodyVelocity :: (Dynamic b t lv av ii) =>
                          Double -> b -> b
 integrateBodyVelocity dt b = setVelocities newVels b
                              where
-                             oldLinVel = getLinearVelocity b
-                             oldAngVel = getAngularVelocity b
-                             fextLin   = getExternalLinearForce b
-                             fextAng   = getExternalAngularForce b
+                             oldLinVel = linearVelocity b
+                             oldAngVel = angularVelocity b
+                             fextLin   = externalLinearForce b
+                             fextAng   = externalAngularForce b
                              newVels   = integrateVelocity dt fextLin fextAng oldLinVel oldAngVel
 
 displacement :: (Vector lv, Vector av, TransformSystem m lv av) =>

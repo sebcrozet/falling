@@ -9,8 +9,8 @@ StaticBody
 where
 
 import Physics.Falling.Math.Transform
-import Physics.Falling.RigidBody.Positionable
-import Physics.Falling.RigidBody.CollisionVolume
+import qualified Physics.Falling.RigidBody.Positionable    as P
+import qualified Physics.Falling.RigidBody.CollisionVolume as C
 
 data (TransformSystem transformType vectorType angleType) =>
      StaticBody transformType
@@ -22,16 +22,16 @@ data (TransformSystem transformType vectorType angleType) =>
                                          , collisionVolume  :: collisionVolumeType
                                       } deriving(Show)
 
-instance (TransformSystem t v a) => Positionable (StaticBody t v a cvt) t v a where
-  getLocalToWorld = localToWorld
-  getWorldToLocal = worldToLocal
+instance (TransformSystem t v a) => P.Positionable (StaticBody t v a cvt) t v a where
+  localToWorld            = localToWorld
+  worldToLocal            = worldToLocal
   setTransforms i it body = body {
                               localToWorld = i
                               , worldToLocal = it
                             }
 
-instance (TransformSystem t v a) => CollisionVolume (StaticBody t v a cvt) cvt where
-  getCollisionVolume                         = collisionVolume
+instance (TransformSystem t v a) => C.CollisionVolume (StaticBody t v a cvt) cvt where
+  collisionVolume                            = collisionVolume
   setCollisionVolume newCollisionVolume body = body { collisionVolume = newCollisionVolume }
 
 mkStaticBody :: (TransformSystem t v a) => t -> cvt -> StaticBody t v a cvt

@@ -11,8 +11,8 @@ import Physics.Falling.Math.Transform hiding(translate)
 import qualified Physics.Falling.Math.Transform as T
 
 class (T.TransformSystem t v av) => Positionable p t v av | p -> t where
-  getLocalToWorld       :: p -> t
-  getWorldToLocal       :: p -> t
+  localToWorld          :: p -> t
+  worldToLocal          :: p -> t
   setTransforms         :: t -> t -> p -> p
 
   -- functions with default implementations
@@ -27,7 +27,7 @@ class (T.TransformSystem t v av) => Positionable p t v av | p -> t where
   setLocalToWorld t    = setTransforms t (inverse t)
   setWorldToLocal t    = setTransforms (inverse t) t
   resetToIdentity      = setTransforms idmtx idmtx
-  prependTransform t p = setLocalToWorld (t .*. getLocalToWorld p) p
-  appendTransform  t p = setLocalToWorld (getLocalToWorld p .*. t) p
-  translate        t p = setLocalToWorld (T.translate t $ getLocalToWorld p) p
-  rotate           w p = setLocalToWorld (T.rotateWrtCenter w $ getLocalToWorld p) p
+  prependTransform t p = setLocalToWorld (t .*. localToWorld p) p
+  appendTransform  t p = setLocalToWorld (localToWorld p .*. t) p
+  translate        t p = setLocalToWorld (T.translate t $ localToWorld p) p
+  rotate           w p = setLocalToWorld (T.rotateWrtCenter w $ localToWorld p) p

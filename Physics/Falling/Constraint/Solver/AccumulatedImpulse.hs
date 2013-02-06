@@ -13,10 +13,7 @@ import Physics.Falling.Collision.Collision
 import Physics.Falling.RigidBody.Positionable
 import Physics.Falling.RigidBody.Dynamic
 import Physics.Falling.Constraint.Solver.AccumulatedImpulseSystem
-import Physics.Falling.Constraint.Solver.ContactDynamicConfiguration
-
-infinity :: Double
-infinity = 1.0 / 0.0
+import Physics.Falling.Constraint.Solver.ContactDynamicConfiguration hiding(linearVelocity, angularVelocity)
 
 solveConstraintsIsland :: (Dynamic rb t lv av ii, UnitVector lv n) =>
                           Double ->
@@ -119,22 +116,22 @@ secondOrderErrorEstimator penDepth = max 0.0 $ (min margin penDepth) - 0.01
 secondOrderWorldContact :: (Dynamic rb t lv av ii, UnitVector lv n) =>
                            Double -> rb -> CollisionDescr lv n -> Bool -> ContactDynamicConfiguration lv av
 secondOrderWorldContact dt rb (CollisionDescr c _ _ n _) invN =
-                        contactConfiguration (translation $ getLocalToWorld rb)
-                                             (getLinearVelocity  rb &+ dt *& getExternalLinearForce rb)
-                                             (getAngularVelocity rb &+ dt *& getExternalAngularForce rb)
-                                             (getInverseMass rb)
-                                             (getWorldSpaceInverseInertiaTensor rb)
+                        contactConfiguration (translation $ localToWorld rb)
+                                             (linearVelocity  rb &+ dt *& externalLinearForce rb)
+                                             (angularVelocity rb &+ dt *& externalAngularForce rb)
+                                             (inverseMass rb)
+                                             (worldSpaceInverseInertiaTensor rb)
                                              (if invN then neg (fromNormal n) else (fromNormal n))
                                              c
 
 firstOrderWorldContact :: (Dynamic rb t lv av ii, UnitVector lv n) =>
                           Double -> rb -> CollisionDescr lv n -> Bool -> ContactDynamicConfiguration lv av
 firstOrderWorldContact _ rb (CollisionDescr c _ _ n _) invN =
-                       contactConfiguration (translation $ getLocalToWorld rb)
+                       contactConfiguration (translation $ localToWorld rb)
                                             zero
                                             zero
-                                            (getInverseMass rb)
-                                            (getWorldSpaceInverseInertiaTensor rb)
+                                            (inverseMass rb)
+                                            (worldSpaceInverseInertiaTensor rb)
                                             (if invN then neg (fromNormal n) else (fromNormal n))
                                             c
 
@@ -160,8 +157,8 @@ secondOrderIntegrate dt bodies linImpVect angImpVect shift =
             let idx    = i + shift in
             let linImp = linImpVect V.! idx in
             let angImp = angImpVect V.! idx in
-            let rb'    = setVelocities (getLinearVelocity  rb &+ getExternalLinearForce  rb &* dt,
-                                        getAngularVelocity rb &+ getExternalAngularForce rb &* dt)
+            let rb'    = setVelocities (linearVelocity  rb &+ externalLinearForce  rb &* dt,
+                                        angularVelocity rb &+ externalAngularForce rb &* dt)
                                        rb
             in
             (i, applyImpulses linImp angImp rb')

@@ -10,10 +10,10 @@ where
 
 import Physics.Falling.Dynamics.InertiaTensor
 import Physics.Falling.Math.Transform
-import qualified Physics.Falling.Shape.VolumetricShape as VS
-import Physics.Falling.RigidBody.Positionable
-import Physics.Falling.RigidBody.Dynamic
-import Physics.Falling.RigidBody.CollisionVolume
+import qualified Physics.Falling.Shape.VolumetricShape     as VS
+import qualified Physics.Falling.RigidBody.Positionable    as P
+import qualified Physics.Falling.RigidBody.Dynamic         as D
+import qualified Physics.Falling.RigidBody.CollisionVolume as C
 
 data (TransformSystem transformType linearVelocityType angularVelocityType
       , VS.VolumetricShape collisionVolumeType
@@ -43,9 +43,9 @@ data (TransformSystem transformType linearVelocityType angularVelocityType
                    } deriving(Show)
 
 instance (TransformSystem t lv av, VS.VolumetricShape cvt i ii av t) =>
-         Positionable (DynamicBody t lv av i ii cvt) t lv av where
-  getLocalToWorld = localToWorld
-  getWorldToLocal = worldToLocal
+         P.Positionable (DynamicBody t lv av i ii cvt) t lv av where
+  localToWorld = localToWorld
+  worldToLocal = worldToLocal
   setTransforms t it body = body {
                               localToWorld                     = t
                               , worldToLocal                   = it
@@ -57,18 +57,18 @@ instance (TransformSystem t lv av, VS.VolumetricShape cvt i ii av t) =>
                                                                        it
 
 instance (TransformSystem t lv av, VS.VolumetricShape cvt i ii av t) =>
-         CollisionVolume (DynamicBody t lv av i ii cvt) cvt where
-  getCollisionVolume                         = collisionVolume
+         C.CollisionVolume (DynamicBody t lv av i ii cvt) cvt where
+  collisionVolume                            = collisionVolume
   setCollisionVolume newCollisionVolume body = _updateMassAndTensor $ body { collisionVolume = newCollisionVolume }
 
 instance (TransformSystem t lv av, VS.VolumetricShape cvt i ii av t) =>
-         Dynamic (DynamicBody t lv av i ii cvt) t lv av ii where
-  getLinearVelocity                 = linearVelocity
-  getAngularVelocity                = angularVelocity
-  getInverseMass                    = inverseMass
-  getWorldSpaceInverseInertiaTensor = worldSpaceInverseInertiaTensor
-  getExternalLinearForce            = externalLinearForce
-  getExternalAngularForce           = externalAngularForce
+         D.Dynamic (DynamicBody t lv av i ii cvt) t lv av ii where
+  linearVelocity                    = linearVelocity
+  angularVelocity                   = angularVelocity
+  inverseMass                       = inverseMass
+  worldSpaceInverseInertiaTensor    = worldSpaceInverseInertiaTensor
+  externalLinearForce               = externalLinearForce
+  externalAngularForce              = externalAngularForce
   setExternalLinearForce f body     = body { externalLinearForce = f }
   setExternalAngularForce f body    = body { externalAngularForce = f }
   setLinearVelocity  linVel body    = body { linearVelocity = linVel }
@@ -81,20 +81,20 @@ mkDynamicBody initLocalToWorld
               initVolume
               initLinearVelocity
               initAngularVelocity =
-              setCollisionVolume initCollisionVolume $ DynamicBody
-                                                       {
-                                                         localToWorld                     = initLocalToWorld
-                                                         , worldToLocal                   = inverse initLocalToWorld
-                                                         , linearVelocity                 = initLinearVelocity
-                                                         , angularVelocity                = initAngularVelocity
-                                                         , volume                         = initVolume
-                                                         , externalLinearForce            = zero
-                                                         , externalAngularForce           = zero
-                                                         , collisionVolume                = undefined
-                                                         , inverseMass                    = undefined
-                                                         , inverseInertiaTensor           = undefined
-                                                         , worldSpaceInverseInertiaTensor = undefined
-                                                       }
+              C.setCollisionVolume initCollisionVolume $ DynamicBody
+                                                         {
+                                                           localToWorld                     = initLocalToWorld
+                                                           , worldToLocal                   = inverse initLocalToWorld
+                                                           , linearVelocity                 = initLinearVelocity
+                                                           , angularVelocity                = initAngularVelocity
+                                                           , volume                         = initVolume
+                                                           , externalLinearForce            = zero
+                                                           , externalAngularForce           = zero
+                                                           , collisionVolume                = undefined
+                                                           , inverseMass                    = undefined
+                                                           , inverseInertiaTensor           = undefined
+                                                           , worldSpaceInverseInertiaTensor = undefined
+                                                         }
 
 -- hidden functions
 _updateMassAndTensor :: (TransformSystem t lv av, VS.VolumetricShape cvt i ii av t) =>
