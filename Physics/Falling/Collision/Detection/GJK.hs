@@ -75,15 +75,21 @@ algorithmGJK _ (Right (projection, barCoords, simplex)) =
 _stepGJK :: (ImplicitShape g v, Eq v, DotProd v) =>
             g -> Simplex v -> Simplex v -> v -> [ Double ] -> SimplexResult v
 _stepGJK s lastSimplex newSimplex v barCoords =
-         if contains csoPoint lastSimplex || sqlenv - v &. csoPoint <= sqEpsRel * sqlenv then
+         if contains csoPoint lastSimplex
+            || sqlenv - v &. csoPoint <= sqEpsRel * sqlenv
+            || lensqr proj > sqlenv -- we test for inconsistancies: if the new lower bound
+                                    -- is greater than the old one something went wrong.
+                                    -- This should actually nether happen and might be an
+                                    -- implementation bug…
+         then
            Right $ (v, barCoords, newSimplex) -- terminate the algorithm: distance has acceptable precision
          else
-           Left $ catTuple4 newSimplex' (projectOrigin newSimplex')
+           Left (proj, projCoords, newSimplex', projSimplex)
          where
-         sqlenv                 = lensqr v
-         csoPoint               = supportPoint s $ neg v
-         newSimplex'            = addPoint csoPoint newSimplex
-         catTuple4 c (a, b, d)  = (a, b, c, d)
+         sqlenv                          = lensqr v
+         csoPoint                        = supportPoint s $ neg v
+         newSimplex'                     = addPoint csoPoint newSimplex
+         (proj, projCoords, projSimplex) = projectOrigin newSimplex'
 
 _pointsFromAnnotatedSimplex :: (Vector v, DotProd v) => [ Double ] -> Simplex (AnnotatedVector v (v, v)) -> (v, v)
 _pointsFromAnnotatedSimplex coords simplex = let (pa, pb) = foldr1 (\(a, b) (a', b') -> (a &+ a', b &+ b'))
