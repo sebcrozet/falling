@@ -21,25 +21,20 @@ solveConstraintsIsland :: (OrthonormalBasis lv n, Dynamic rb t lv av ii, UnitVec
                           [ ContactManifold lv n ] ->
                           ([ (Int, rb) ], [ ContactManifold lv n ])
 solveConstraintsIsland dt bodies contacts =
-  (solveSystem 8 dt projectedBodies indexShift firstOrderIntegrate $
-   foldr (addFirstOrderEquations dt projectedBodiesVect indexShift)
-          emptySystem
-          contacts
+  (solveSystem 8 dt projectedBodies indexShift firstOrderIntegrate
+   $ foldr (addFirstOrderEquations dt projectedBodiesVect indexShift) emptySystem contacts
    , contacts)
   where
-  bodiesVect             = initBodiesVect bodies indexShift numBodyIndex
-  firstB:otherB          = bodies
-  (m, mm)                = foldr (\(i, _) (m', mm') -> (min m' i, max mm' i))
-                                 (fst firstB, fst firstB)
-                                 otherB
-  numBodyIndex           = mm - m + 1
-  indexShift             = -m
-  (projectedBodies, _)   = (solveSystem 8 dt bodies indexShift secondOrderIntegrate $
-                           foldr (addSecondOrderEquations dt bodiesVect indexShift) 
-                                 emptySystem
-                                 contacts
-                           , contacts)
-  projectedBodiesVect     = initBodiesVect projectedBodies indexShift numBodyIndex
+  bodiesVect          = initBodiesVect bodies indexShift numBodyIndex
+  firstB:otherB       = bodies
+  (m, mm)             = foldr (\(i, _) (m', mm') -> (min m' i, max mm' i))
+                              (fst firstB, fst firstB)
+                              otherB
+  numBodyIndex        = mm - m + 1
+  indexShift          = -m
+  projectedBodies     = solveSystem 20 dt bodies indexShift secondOrderIntegrate
+                        $ foldr (addSecondOrderEquations dt bodiesVect indexShift) emptySystem contacts
+  projectedBodiesVect = initBodiesVect projectedBodies indexShift numBodyIndex
 
 
 initBodiesVect :: [ (Int, rb) ] -> Int -> Int -> (V.Vector rb)

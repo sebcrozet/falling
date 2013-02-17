@@ -13,6 +13,7 @@ Library
                    Physics.Falling.Collision.Detection.IncrementalContactManifold
                    Physics.Falling.Collision.Detection.BroadPhase
                    Physics.Falling.Collision.Detection.BruteForceBroadPhase
+                   -- Physics.Falling.Collision.Detection.LoozeBoundingVolumeBruteForceBroadPhase
                    Physics.Falling.Collision.Detection.NarrowPhase
                    Physics.Falling.Collision.Detection.BallBallCollisionDetector
                    Physics.Falling.Collision.Detection.PlaneImplicitShapeCollisionDetector
@@ -20,10 +21,13 @@ Library
                    Physics.Falling.Collision.Detection.Simplex
                    Physics.Falling.Collision.Detection.GJK
                    Physics.Falling.Collision.Detection.MinkowskiSampling
+                   -- Physics.Falling.Collision.Detection.LoozeBoundingVolumeDynamicTree
                    Physics.Falling.Collision.Graph.CollisionGraph
                    Physics.Falling.Collision.Graph.CollisionGraphTree
-                   Physics.Falling.Constraint.Solver.AccumulatedImpulseSystem
+                   Physics.Falling.Constraint.Solver.FirstOrderWorldAccumulatedImpulse
+                   Physics.Falling.Constraint.Solver.SecondOrderWorldAccumulatedImpulse
                    Physics.Falling.Constraint.Solver.AccumulatedImpulse
+                   Physics.Falling.Constraint.Solver.AccumulatedImpulseSystem
                    Physics.Falling.Constraint.Solver.ContactDynamicConfiguration
                    Physics.Falling.Dynamics.InertiaTensor
                    Physics.Falling.Identification.Identifiable
@@ -35,6 +39,7 @@ Library
                    Physics.Falling.Math.AnnotatedVector
                    Physics.Falling.Math.Error
                    Physics.Falling.Math.UnitSphere
+                   Physics.Falling.Math.OrthonormalBasis
                    Physics.Falling.RigidBody.CollisionVolume
                    Physics.Falling.RigidBody.Dynamic
                    Physics.Falling.RigidBody.DynamicBody
@@ -44,7 +49,10 @@ Library
                    Physics.Falling.RigidBody.RigidBody
                    Physics.Falling.RigidBody.RigidBodySolver
                    Physics.Falling.RigidBody.StaticBody
+                   Physics.Falling.Shape.AABB
+                   Physics.Falling.Shape.AABBFactory
                    Physics.Falling.Shape.Ball
+                   Physics.Falling.Shape.Box
                    Physics.Falling.Shape.ImplicitShape
                    Physics.Falling.Shape.ShapeWithMargin
                    Physics.Falling.Shape.ShapeReflection
@@ -52,9 +60,11 @@ Library
                    Physics.Falling.Shape.MinkowskiSum
                    Physics.Falling.Shape.Plane
                    Physics.Falling.Shape.VolumetricShape
+                   Physics.Falling.Shape.TransformableShape
                    Physics.Falling.Shape.CSO
+                   Physics.Falling.Shape.BoundingVolume
+                   Physics.Falling.Shape.HasBoundingVolume
                    Physics.Falling.World.GenericWorld
                    Physics.Falling.World.WorldWithRigidBody
-  Build-Depends:  base, vect >= 0.4.0, containers >= 0.5.0.0, fgl >= 5.4.0.0, vector >= 0.10.0.0
-  ghc-options:    -Wall -O2 
-  -- -prof -auto-all -caf-all
+  Build-Depends:  base, vect >= 0.4.0, containers >= 0.5.0.0, fgl >= 5.4.0.0, vector >= 0.10.0.0, data-ordlist >= 0.4.0
+  ghc-options:    -Wall -O2

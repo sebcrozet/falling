@@ -135,13 +135,22 @@ step dt world = newWorld
 
                 -- execute broad phase
                 (newColls, collsLost, newBroadPhase) = BP.update forwardDynamicsBodies $ broadPhase world
-                newCollisions = map (\(r1, r2) -> (n2g M.! (identifier r1), -- FIXME: ensure that idr1 < idr2
-                                                   n2g M.! (identifier r2),
-                                                   dispatcher r1 r2))
+                newCollisions = map (\(r1, r2) -> let idr1 = n2g M.! (identifier r1) in
+                                                  let idr2 = n2g M.! (identifier r2) in
+                                                  if idr1 < idr2 then
+                                                    (idr1, idr2, dispatcher r1 r2)
+                                                  else
+                                                    (idr2, idr1, dispatcher r2 r1)
+                                    )
                                     newColls
-                lostCollisions = map (\(r1, r2) -> (n2g M.! (identifier r1), -- FIXME: ensure that idr1 < idr2
-                                                    n2g M.! (identifier r2)))
-                                    collsLost
+                lostCollisions = map (\(r1, r2) -> let idr1 = n2g M.! (identifier r1) in
+                                                   let idr2 = n2g M.! (identifier r2) in
+                                                   if idr1 < idr2 then
+                                                     (idr1, idr2)
+                                                   else
+                                                     (idr2, idr1)
+                                     )
+                                     collsLost
 
                 -- insert new collisions ...
                 afterRemoveCollisionGraph  = removeCollisions lostCollisions $ collisionGraph world

@@ -21,6 +21,7 @@ module Physics.Falling.Collision.Graph.CollisionGraphTree
     , UGr
     , fastInsNode
     , fastInsEdge
+    , insertRemoveToMatch
     )
     where
 
@@ -36,7 +37,6 @@ type GraphRep a b = IntMap (Context' a b)
 type Context' a b = (IntMap b, a, IntMap b)
 
 type UGr = Gr () ()
-
 
 instance Graph Gr where
     -- required members
@@ -109,6 +109,35 @@ fastInsEdge (v, w, l) (Gr g) = g2 `seq` Gr g2
       addSucc' (ps, l', ss) = (ps, l', IM.insert w l ss)
       addPred' (ps, l', ss) = (IM.insert v l ps, l', ss)
 
+insertRemoveToMatch :: Node -> [ (Node, b) ] -> [ (Node, b) ] -> Gr a b -> Gr a b
+insertRemoveToMatch node succs preds (Gr g) =
+                    Gr g5
+                    where
+                    -- setup datas
+                    (oldSuccs, nl, oldPreds)    = g IM.! node
+                    newSuccs                    = IM.fromList succs
+                    newPreds                    = IM.fromList preds
+                    -- compute diffs
+                    diff new old                = (new IM.\\ old, old IM.\\ new)
+                    (toAddSucc, toRemoveSucc)   = diff newSuccs oldSuccs
+                    (toAddPred, toRemovePred)   = diff newPreds oldPreds
+                    -- adjust current node’s attached edges
+                    finalSucc                   = toAddSucc `IM.union` (oldSuccs IM.\\ toRemoveSucc)
+                    finalPred                   = toAddPred `IM.union` (oldPreds IM.\\ toRemovePred)
+                    g1                          = IM.insert node (finalSucc, nl, finalPred) g
+                    -- adjust other node’s edges
+                    g2                          = IM.foldrWithKey (modify rmSucc')  g1 toRemovePred
+                    g3                          = IM.foldrWithKey (modify rmPred')  g2 toRemoveSucc
+                    g4                          = IM.foldrWithKey (modify addSucc') g3 toAddPred
+                    g5                          = IM.foldrWithKey (modify addPred') g4 toAddSucc
+                    -- modification helpers
+                    modify method k b gr        = IM.adjust (method b) k gr
+                    addSucc' b (ps, l', ss)     = (ps              , l', IM.insert node b ss)
+                    addPred' b (ps, l', ss)     = (IM.insert node b ps, l', ss)
+                    rmSucc' _  (ps, l', ss)     = (ps              , l', IM.delete node ss)
+                    rmPred' _  (ps, l', ss)     = (IM.delete node ps  , l', ss)
+                    
+                    
 
 {-# RULES
       "gmap/Physics.Falling.Collision.Graph.CollisionGraphTree"  gmap = fastGMap

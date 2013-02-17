@@ -110,21 +110,21 @@ solveST niter (AccumulatedImpulseSystem mid impulseSystem) =
           CM.forM_ impulseSystem $ (\equation -> do
             i   <- readSTRef currId
             _   <- modifySTRef currId (+1)
-            imp <- M.read impVect i
+            imp <- M.unsafeRead impVect i
             case equation of
               BibodiesEquation id1 id2 conf1 conf2 vc iti lb ub -> do
-                lv1 <- M.read lVect id1
-                av1 <- M.read aVect id1
-                lv2 <- M.read lVect id2
-                av2 <- M.read aVect id2
+                lv1 <- M.unsafeRead lVect id1
+                av1 <- M.unsafeRead aVect id1
+                lv2 <- M.unsafeRead lVect id2
+                av2 <- M.unsafeRead aVect id2
                 let (lv1', av1', lv2', av2', imp') = solveBibodyConstraint lv1 av1 ld1 ad1 wld1 wad1
                                                                            lv2 av2 ld2 ad2 wld2 wad2
                                                                            iti vc  lb  ub  imp
-                _ <- M.write impVect i imp'
-                _ <- M.write lVect id1 lv1'
-                _ <- M.write aVect id1 av1'
-                _ <- M.write lVect id2 lv2'
-                _ <- M.write aVect id2 av2'
+                _ <- M.unsafeWrite impVect i imp'
+                _ <- M.unsafeWrite lVect id1 lv1'
+                _ <- M.unsafeWrite aVect id1 av1'
+                _ <- M.unsafeWrite lVect id2 lv2'
+                _ <- M.unsafeWrite aVect id2 av2'
                 return ()
                 where
                 ld1  = linearDirection          conf1
@@ -136,13 +136,13 @@ solveST niter (AccumulatedImpulseSystem mid impulseSystem) =
                 wld2 = weightedLinearDirection  conf2
                 wad2 = weightedAngularDirection conf2
               UnibodyEquation  ie conf vc iti lb ub -> do
-                lv <- M.read lVect ie
-                av <- M.read aVect ie
+                lv <- M.unsafeRead lVect ie
+                av <- M.unsafeRead aVect ie
                 let (lv', av', imp') = solveUnibodyConstraint lv  av ld ad wld wad
                                                               iti vc lb ub imp
-                _ <- M.write impVect i  imp'
-                _ <- M.write lVect   ie lv'
-                _ <- M.write aVect   ie av'
+                _ <- M.unsafeWrite impVect i  imp'
+                _ <- M.unsafeWrite lVect   ie lv'
+                _ <- M.unsafeWrite aVect   ie av'
                 return ()
                 where
                 ld  = linearDirection          conf

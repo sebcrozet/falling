@@ -69,13 +69,15 @@ insertBody :: Body b -> CollisionGraph b c -> CollisionGraph b c
 insertBody = insNode
 
 insertCollision :: Collision c -> CollisionGraph b c -> CollisionGraph b c
-insertCollision coll = assert (_isCollisionValid' coll) $ insEdge coll
+insertCollision coll = assert (_isCollisionValid' coll)
+                       $ insEdge coll
 
 insertBodies :: [Body b] -> CollisionGraph b c -> CollisionGraph b c
 insertBodies ns g = foldl' (flip fastInsNode) g ns -- insNodes
 
 insertCollisions :: [Collision c] -> CollisionGraph b c -> CollisionGraph b c
-insertCollisions colls g = assert (all _isCollisionValid' colls) $ foldl' (flip fastInsEdge) g colls
+insertCollisions colls g = assert (all _isCollisionValid' colls)
+                           $ foldl' (flip fastInsEdge) g colls
 
 -- removal
 removeBody :: BodyId -> CollisionGraph b c -> CollisionGraph b c
@@ -85,7 +87,8 @@ removeBody' :: Body b -> CollisionGraph b c -> CollisionGraph b c
 removeBody' (idb, _) = removeBody idb
 
 removeCollision :: (BodyId, BodyId) -> CollisionGraph b c -> CollisionGraph b c
-removeCollision coll = assert (_isCollisionValid coll) $ delEdge coll
+removeCollision coll = assert (_isCollisionValid coll)
+                       $ delEdge coll
 
 removeCollision' :: Collision c -> CollisionGraph b c -> CollisionGraph b c
 removeCollision' (id1, id2, _) = removeCollision (id1, id2)
@@ -97,7 +100,8 @@ removeBodies' :: [Body b] -> CollisionGraph b c -> CollisionGraph b c
 removeBodies' = removeBodies . map fst
 
 removeCollisions :: [(BodyId, BodyId)] -> CollisionGraph b c -> CollisionGraph b c
-removeCollisions colls = assert (all _isCollisionValid colls) $ delEdges colls
+removeCollisions colls = assert (all _isCollisionValid colls)
+                         $ delEdges colls
 
 removeCollisions' :: [Collision c] -> CollisionGraph b c -> CollisionGraph b c
 removeCollisions' = removeCollisions . map (\(a, b, _) -> (a, b))

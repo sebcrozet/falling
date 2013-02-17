@@ -12,6 +12,7 @@ import qualified Physics.Falling.World.GenericWorld as GW
 import Physics.Falling.Collision.Detection.BroadPhase
 import Physics.Falling.Collision.Detection.NarrowPhase
 import Physics.Falling.Shape.VolumetricShape
+import Physics.Falling.Shape.TransformableShape
 import Physics.Falling.RigidBody.OrderedRigidBody
 import Physics.Falling.RigidBody.Filters
 import Physics.Falling.Identification.SignedIndexGenerator
@@ -23,6 +24,8 @@ type World transformType
            inverseInertiaTensorType
            dynamicCollisionVolumeType
            staticCollisionVolumeType
+           transformedDynamicCollisionVolumeType
+           transformedStaticCollisionVolumeType
            broadPhase
            narrowPhase -- FIXME: remove that?
            contactManifoldType
@@ -34,7 +37,9 @@ type World transformType
                                         inertiaTensorType
                                         inverseInertiaTensorType
                                         dynamicCollisionVolumeType
-                                        staticCollisionVolumeType)
+                                        staticCollisionVolumeType
+                                        transformedDynamicCollisionVolumeType
+                                        transformedStaticCollisionVolumeType)
                       broadPhase
                       narrowPhase
                       contactManifoldType
@@ -44,13 +49,15 @@ type World transformType
 mkWorld :: (Ord idt
             , TransformSystem t lv av
             , VolumetricShape ds i ii av t
-            , NarrowPhase nf (OrderedRigidBody idt t lv av i ii ds ss) cm
-            , BroadPhase  bf (OrderedRigidBody idt t lv av i ii ds ss)) =>
+            , TransformableShape ds t ds'
+            , TransformableShape ss t ss'
+            , NarrowPhase nf (OrderedRigidBody idt t lv av i ii ds ss ds' ss') cm
+            , BroadPhase  bf (OrderedRigidBody idt t lv av i ii ds ss ds' ss')) =>
            bf ->
-           (OrderedRigidBody idt t lv av i ii ds ss -> OrderedRigidBody idt t lv av i ii ds ss -> nf) ->
-           (Double -> [ (Int, OrderedRigidBody idt t lv av i ii ds ss) ] -> [ cm ] ->
-             ([ (Int, OrderedRigidBody idt t lv av i ii ds ss) ], [ cm ])) ->
-           World t lv av i ii ds ss bf nf cm idt
+           (OrderedRigidBody idt t lv av i ii ds ss ds' ss' -> OrderedRigidBody idt t lv av i ii ds ss ds' ss' -> nf) ->
+           (Double -> [ (Int, OrderedRigidBody idt t lv av i ii ds ss ds' ss') ] -> [ cm ] ->
+             ([ (Int, OrderedRigidBody idt t lv av i ii ds ss ds' ss') ], [ cm ])) ->
+           World t lv av i ii ds ss ds' ss' bf nf cm idt
 mkWorld initBroadPhase initCollisionDetectionDispatcher initConstraintsIslandSolver 
         = GW.mkWorld initBroadPhase
                      initCollisionDetectionDispatcher

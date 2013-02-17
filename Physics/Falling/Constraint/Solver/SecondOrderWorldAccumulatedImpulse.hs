@@ -39,13 +39,13 @@ addSecondOrderEquation :: (OrthonormalBasis lv n, Dynamic rb t lv av ii, UnitVec
 addSecondOrderEquation dt bodies shift (UnibodyCollision idx coll _) sys =
                        foldr (\(ll, ul, e, conf) s -> addSingleBodyEquation conf sid ll ul (e / dt) s) sys confs -- FIXME: uggly to set limits and depth here
                        where
-                       sid   = idx + shift
-                       rb    = bodies V.! sid
-                       confs = (0.0, infinity, err, secondOrderWorldContact dt rb center normal False)
-                               : map (\a -> (-0.7 * 9.81, 0.7 * 9.81, 0.0, a))
-                                     (map (\t -> secondOrderWorldContact dt rb center t False) tangeants)
-                       depth = penetrationDepth coll
-                       err   = secondOrderErrorEstimator depth
+                       sid    = idx + shift
+                       rb     = bodies V.! sid
+                       confs  = (0.0, infinity, err, secondOrderWorldContact dt rb center normal False)
+                                : map (\a -> (-0.7 * 9.81, 0.7 * 9.81, 0.0, a))
+                                      (map (\t -> secondOrderWorldContact dt rb center t False) tangeants)
+                       depth  = penetrationDepth coll
+                       err    = secondOrderErrorEstimator depth
                        normal = contactNormal coll
                        center = contactCenter coll
                        tangeants = snd $ completeBasis normal
