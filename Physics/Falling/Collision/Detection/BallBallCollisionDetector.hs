@@ -8,25 +8,19 @@ import Physics.Falling.Math.Transform
 import Physics.Falling.Shape.Ball
 import Physics.Falling.Collision.Collision
 
--- generic ballball collision detection algorithm
-collideBallBall :: (Translation m v, UnitVector v n) =>
-                   (Ball v) -> (Ball v) -> m -> m -> Maybe (CollisionDescr v n)
-collideBallBall (Ball r1) (Ball r2) transform1 transform2 =
-                                            if sqDist <= (r1 + r2) ** 2.0 then
-                                              Just $ CollisionDescr collisionCenter
-                                                                    undefined
-                                                                    undefined
-                                                                    collisionNormal
-                                                                    depth
-                                            else
-                                              Nothing
+collideBallBall :: (Vector v, UnitVector v n) =>
+                   Ball v -> Ball v -> Maybe (PartialCollisionDescr v n)
+collideBallBall (Ball c1 r1) (Ball c2 r2) =
+                if sqDist <= (r1 + r2) ** 2.0 then
+                  Just $ (cp1, cp2, collisionNormal, depth)
+                else
+                  Nothing
 
-                                            where
-                                            center1         = translation transform1
-                                            center2         = translation transform2
-                                            deltaPos        = center2 &- center1
-                                            collisionNormal = mkNormal deltaPos
-                                            nvect           = fromNormal collisionNormal
-                                            collisionCenter = (nvect &* (r1 - r2) &+ center1 &+ center2) &* 0.5
-                                            sqDist          = normsqr deltaPos
-                                            depth           = r1 + r2 - sqrt sqDist 
+                where
+                deltaPos        = c2 &- c1
+                collisionNormal = mkNormal deltaPos
+                nvect           = fromNormal collisionNormal
+                cp1             = c1 &+ r1 *& nvect
+                cp2             = c2 &- r2 *& nvect
+                sqDist          = normsqr deltaPos
+                depth           = r1 + r2 - sqrt sqDist 

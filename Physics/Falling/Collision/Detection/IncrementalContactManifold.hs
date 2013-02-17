@@ -14,16 +14,16 @@ import Physics.Falling.Collision.Collision
 import Control.Exception
 
 updateContacts :: (Transform m v, UnitVector v n) =>
-                  (m, m) -> (m, m) -> [CollisionDescr v n] -> [CollisionDescr v n]
-updateContacts t1s t2s = map (\(Just c) -> c) . filter isJust . map (updateContact t1s t2s)
-                         where
-                         isJust Nothing = False
-                         isJust _       = True
+                  m -> m -> [CollisionDescr v n] -> [CollisionDescr v n]
+updateContacts t1 t2 = map (\(Just c) -> c) . filter isJust . map (updateContact t1 t2)
+                       where
+                       isJust Nothing = False
+                       isJust _       = True
 
 updateContact :: (Transform m v, UnitVector v n) =>
-                 (m, m) -> (m, m) -> CollisionDescr v n -> Maybe (CollisionDescr v n)
-updateContact (t1, it1) (t2, it2) (CollisionDescr _ lp1 lp2 n d) =
-              if (lensqr terr > gap * gap || penetrationDepth newcoll < 0.0) then
+                 m -> m -> CollisionDescr v n -> Maybe (CollisionDescr v n)
+updateContact t1 t2 coll@(CollisionDescr _ lp1 lp2 n _) =
+              if d' < 0.0 || lensqr terr > gap * gap then
                 Nothing
               else
                 Just newcoll
@@ -31,11 +31,10 @@ updateContact (t1, it1) (t2, it2) (CollisionDescr _ lp1 lp2 n d) =
               nv      = fromNormal n
               wp1     = t1 `transform` lp1
               wp2     = t2 `transform` lp2
-              c'      = (wp1 &+ wp2) &* 0.5
-              n'      = wp2 &- wp1
-              d'      = d - n' &. nv
-              terr    = n' &- nv &* (n' &. nv)
-              newcoll = mkCollisionDescrWithCenter it1 it2 c' n d'
+              n'      = wp1 &- wp2
+              d'      = n' &. nv
+              terr    = n' &- nv &* d'
+              newcoll = coll { penetrationDepth = d' }
 
 addContact :: (OrthonormalBasis v n, Dimension v) =>
               CollisionDescr v n -> [CollisionDescr v n] -> [CollisionDescr v n]

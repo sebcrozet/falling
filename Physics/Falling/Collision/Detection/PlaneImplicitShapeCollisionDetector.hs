@@ -9,27 +9,17 @@ import Physics.Falling.Shape.ImplicitShape
 import Physics.Falling.Shape.Plane
 import Physics.Falling.Collision.Collision
 
-collidePlaneImplicitShape :: (ImplicitShape  g  v
-                              , Transform    m  v
-                              , UnitVector   v  n) =>
-                             (Plane v, m, m) -> (g, m, m) -> Maybe (CollisionDescr v n)
-collidePlaneImplicitShape ((Plane upVec), planeTransform, planeInvTransform)
-                          (other, otherTransform, otherInvTransform) =
+collidePlaneImplicitShape :: (ImplicitShape g v, UnitVector v n) =>
+                             Plane v n -> g -> Maybe (PartialCollisionDescr v n)
+collidePlaneImplicitShape (Plane center planeNormal) other =
                           if d > 0.0 then
-                            Just $ mkCollisionDescrWithCenter planeInvTransform
-                                                              otherInvTransform
-                                                              c
-                                                              n
-                                                              d
+                            Just $ (cp1, cp2, n, d)
                           else
                             Nothing
                           where
-                          planeCenter    = translation planeTransform
-                          planeNormal    = mkNormal $ planeTransform `deltaTransform` upVec
                           invPlaneNormal = neg $ fromNormal planeNormal
-                          deepestPoint   = supportPointWithTransform other
-                                                                     invPlaneNormal
-                                                                     otherTransform
+                          deepestPoint   = supportPoint other invPlaneNormal
                           n              = planeNormal
-                          c              = (deepestPoint &+ fromNormal planeNormal &* (d * 0.5))
-                          d              = (planeCenter  &- deepestPoint) &. fromNormal planeNormal
+                          d              = (center  &- deepestPoint) &. fromNormal planeNormal
+                          cp1            = deepestPoint &+ fromNormal planeNormal &* d
+                          cp2            = deepestPoint

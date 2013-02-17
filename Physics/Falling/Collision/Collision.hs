@@ -1,18 +1,20 @@
 module Physics.Falling.Collision.Collision
 (
 CollisionDescr(..)
+, PartialCollisionDescr
 , Collision(..)
 , ContactManifold
 , contactManifoldGeometries
 , collisionDescr2UnibodyCollision
 , collisionDescr2BibodyCollision
 , revertCollisionDescr
-, mkCollisionDescrWithCenter
-, mkCollisionDescrWithPoints
+, mkCollisionDescr
 )
 where
 
 import Physics.Falling.Math.Transform
+
+type PartialCollisionDescr v n = (v, v, n, Double)
 
 data (Vector v, UnitVector v n) => CollisionDescr v n = CollisionDescr
                                                         {
@@ -57,11 +59,8 @@ collisionDescr2BibodyCollision id1 id2 c = BibodyCollision id1 id2 c 0.0
 revertCollisionDescr :: (Vector v, UnitVector v n) => CollisionDescr v n -> CollisionDescr v n
 revertCollisionDescr (CollisionDescr v lv1 lv2 n d) = CollisionDescr v lv2 lv1 (toNormalUnsafe $ neg $ fromNormal n) d
 
-mkCollisionDescrWithCenter :: (Vector v, UnitVector v n, Transform m v) =>
-                              m -> m -> v -> n -> Double -> CollisionDescr v n
-mkCollisionDescrWithCenter it1 it2 pt normal depth =
-                           CollisionDescr pt (it1 `transform` pt) (it2 `transform` pt) normal depth
-
-mkCollisionDescrWithPoints :: (Vector v, UnitVector v n, Transform m v) =>
-                              m -> m -> v -> v -> n -> Double -> CollisionDescr v n
-mkCollisionDescrWithPoints it1 it2 pt1 pt2 = mkCollisionDescrWithCenter it1 it2 ((pt1 &+ pt2) &* 0.5)
+mkCollisionDescr :: (Vector v, UnitVector v n, Transform m v) =>
+                    m -> m -> PartialCollisionDescr v n -> CollisionDescr v n
+mkCollisionDescr it1 it2 (pt1, pt2, n, d) =
+                 CollisionDescr ((pt1 &+ pt2) &* 0.5) (it1 `transform` pt1) (it2 `transform` pt2) n d
+                 -- FIXWE: we could compute d here
