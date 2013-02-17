@@ -1,27 +1,49 @@
 module Physics.Falling.Shape.AABB
 (
-AABB(..),
--- intersectsAABB
+AABB(InfiniteAABB)
+, aabbFromBounds
+, aabbFromBoundsUnsafe
 )
 where
 
--- import Physics.Falling.Shape.ExtraTransform
--- import Physics.Falling.Shape.Shape
+import Data.List
 
-data AABB = AABB [ (Double, Double) ]
+import Physics.Falling.Shape.BoundingVolume
+
+-- FIXME: this definition is too permissive since there is no type-level restictions on the
+-- dimension
+data AABB = AABB [ Double ] [ Double ] -- mins and maxs
           | InfiniteAABB
 
+instance BoundingVolume AABB where
+  merge (AABB mn1 mx1) (AABB mn2 mx2) = AABB (zipWith min mn1 mn2) (zipWith max mx1 mx2)
+  merge InfiniteAABB   _              = InfiniteAABB
+  merge _              InfiniteAABB   = InfiniteAABB
 
--- intersectsAABB :: AABB -> AABB -> Bool
--- intersectsAABB InfiniteAABB _ = True
--- intersectsAABB _ InfiniteAABB = True
--- intersectsAABB (AABB bounds1) (AABB bounds2) = or $ zipWith rangesIntersect bounds1 bounds2
---                                                where
---                                                rangesIntersect (a, a') (b, b') = not ((b > a') || (b' < a))
--- 
--- aabbFromShape :: (PrincipalDirections v) => Shape v -> AABB
--- aabbFromShape (InfiniteShape _) = InfiniteAABB
--- aabbFromShape (FiniteShape g)   = InfiniteAABB
---                                         where
---                                         supportAxis :: [ v ]
---                                         supportAxis = principalDirections
+  intersects (AABB mn1 mx1) (AABB mn2 mx2) = not $ any dontIntersects $ zip4 mn1 mx1 mn2 mx2
+                                             where
+                                             dontIntersects (min1, max1, min2, max2) = min1 > max2
+                                                                                       || min2 > max1
+                                                                                       || max1 < min2
+                                                                                       || max2 < min1
+  intersects InfiniteAABB   _              = True
+  intersects _              InfiniteAABB   = True
+
+  contains InfiniteAABB   _              = True
+  contains _              InfiniteAABB   = False
+  contains (AABB mn1 mx1) (AABB mn2 mx2) = all contain1d $ zip4 mn1 mx1 mn2 mx2
+                                           where
+                                           contain1d (min1, max1, min2, max2) = min1 <= min2
+                                                                                && max1 >= max2
+
+instance LoozeBoundingVolume AABB where
+  loozen _          InfiniteAABB = InfiniteAABB
+  loozen loozeWidth (AABB mn mx) = AABB (map ((-) loozeWidth) mn) (map (+ loozeWidth) mx)
+
+aabbFromBounds :: [ (Double, Double) ] -> AABB
+aabbFromBounds bounds = aabbFromBoundsUnsafe $ map rearrange bounds
+                        where
+                        rearrange p@(a, b) = if b < a then (b, a) else p
+
+aabbFromBoundsUnsafe :: [ (Double, Double) ] -> AABB
+aabbFromBoundsUnsafe = uncurry AABB . unzip
