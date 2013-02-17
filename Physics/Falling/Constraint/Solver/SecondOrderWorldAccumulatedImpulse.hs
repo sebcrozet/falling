@@ -6,6 +6,7 @@ addSecondOrderEquations
 where
 
 import qualified Data.Vector as V
+import qualified Data.Vector.Unboxed as UV
 import Physics.Falling.Math.Transform
 import Physics.Falling.Math.Error
 import Physics.Falling.Math.OrthonormalBasis
@@ -77,15 +78,15 @@ secondOrderWorldContact dt rb c n invN =
                                              (if invN then neg (fromNormal n) else (fromNormal n))
                                              c
 
-secondOrderIntegrate :: (Dynamic rb t lv av ii) =>
-                        Double -> [ (Int, rb) ] -> V.Vector lv -> V.Vector av -> Int -> [ (Int, rb) ]
+secondOrderIntegrate :: (Dynamic rb t lv av ii, UV.Unbox lv, UV.Unbox av) =>
+                        Double -> [ (Int, rb) ] -> UV.Vector lv -> UV.Vector av -> Int -> [ (Int, rb) ]
 secondOrderIntegrate dt bodies linImpVect angImpVect shift =
           map applyBodyImpulses bodies
           where
           applyBodyImpulses (i, rb) =
             let idx    = i + shift in
-            let linImp = linImpVect V.! idx in
-            let angImp = angImpVect V.! idx in
+            let linImp = linImpVect UV.! idx in
+            let angImp = angImpVect UV.! idx in
             let rb'    = setVelocities (linearVelocity  rb &+ externalLinearForce  rb &* dt,
                                         angularVelocity rb &+ externalAngularForce rb &* dt)
                                        rb

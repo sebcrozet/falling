@@ -6,7 +6,8 @@ where
 
 import Control.Monad.ST
 import qualified Data.Vector as V
-import Data.Vector.Mutable hiding(length) -- FIXME: use unboxed vectors instead (implement instances for Unbox VecN)
+import qualified Data.Vector.Unboxed as UV
+import Data.Vector.Mutable hiding(length)
 import Physics.Falling.Math.Transform
 import Physics.Falling.Math.OrthonormalBasis
 import Physics.Falling.Collision.Collision
@@ -15,7 +16,7 @@ import Physics.Falling.Constraint.Solver.AccumulatedImpulseSystem
 import Physics.Falling.Constraint.Solver.FirstOrderWorldAccumulatedImpulse
 import Physics.Falling.Constraint.Solver.SecondOrderWorldAccumulatedImpulse
 
-solveConstraintsIsland :: (OrthonormalBasis lv n, Dynamic rb t lv av ii, UnitVector lv n) =>
+solveConstraintsIsland :: (OrthonormalBasis lv n, Dynamic rb t lv av ii, UnitVector lv n, UV.Unbox lv, UV.Unbox av) =>
                           Double ->
                           [ (Int, rb) ] ->
                           [ ContactManifold lv n ] ->
@@ -43,12 +44,12 @@ initBodiesVect bodies indexShift numBodyIndex = runST $ do
                         _ <- mapM_ (\(i, b) -> write bodyVect (i + indexShift) b) $ bodies
                         V.unsafeFreeze bodyVect
 
-solveSystem :: (Dynamic rb t lv av ii) =>
-               Int                                                                             ->
-               Double                                                                          ->
-               [ (Int, rb) ]                                                                   ->
-               Int                                                                             ->
-               (Double -> [ (Int, rb) ] -> V.Vector lv -> V.Vector av -> Int -> [ (Int, rb) ]) ->
+solveSystem :: (Dynamic rb t lv av ii, UV.Unbox lv, UV.Unbox av) =>
+               Int                                                                               ->
+               Double                                                                            ->
+               [ (Int, rb) ]                                                                     ->
+               Int                                                                               ->
+               (Double -> [ (Int, rb) ] -> UV.Vector lv -> UV.Vector av -> Int -> [ (Int, rb) ]) ->
                AccumulatedImpulseSystem lv av ->
                [ (Int, rb) ]
 solveSystem niter dt bodies shift integrator sys = case solve niter sys of

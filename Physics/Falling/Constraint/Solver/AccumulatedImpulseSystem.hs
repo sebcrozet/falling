@@ -10,8 +10,8 @@ where
 
 import Control.Monad.ST
 import qualified Control.Monad as CM
-import qualified Data.Vector as V
-import qualified Data.Vector.Mutable as M
+import qualified Data.Vector.Unboxed as UV
+import qualified Data.Vector.Unboxed.Mutable as UVM
 import Data.STRef
 import Physics.Falling.Math.Transform
 import Physics.Falling.Constraint.Solver.ContactDynamicConfiguration
@@ -92,39 +92,39 @@ addTwoBodiesEquation conf1 conf2 id1 id2 lLimit hLimit err (AccumulatedImpulseSy
                                      , higLimit           = hLimit
                                    }
 
-solve :: (Vector lv, Vector av, DotProd lv, DotProd av) =>
-         Int -> AccumulatedImpulseSystem lv av -> Maybe (V.Vector lv, V.Vector av)
+solve :: (Vector lv, Vector av, DotProd lv, DotProd av, UVM.Unbox lv, UVM.Unbox av) =>
+         Int -> AccumulatedImpulseSystem lv av -> Maybe (UV.Vector lv, UV.Vector av)
 solve _     (AccumulatedImpulseSystem _ []) = Nothing
 solve niter system = Just $ runST $ solveST niter system
 
-solveST :: (Vector lv, Vector av, DotProd lv, DotProd av) =>
-           Int -> AccumulatedImpulseSystem lv av -> ST s (V.Vector lv, V.Vector av)
+solveST :: (Vector lv, Vector av, DotProd lv, DotProd av, UVM.Unbox lv, UVM.Unbox av) =>
+           Int -> AccumulatedImpulseSystem lv av -> ST s (UV.Vector lv, UV.Vector av)
 solveST niter (AccumulatedImpulseSystem mid impulseSystem) =
         do
-        lVect   <- M.replicate (mid + 1) zero -- FIXME: can have a huge memory cost
-        aVect   <- M.replicate (mid + 1) zero -- FIXME: can have a huge memory cost
-        impVect <- M.replicate (length impulseSystem) 0.0
+        lVect   <- UVM.replicate (mid + 1) zero -- FIXME: can have a huge memory cost
+        aVect   <- UVM.replicate (mid + 1) zero -- FIXME: can have a huge memory cost
+        impVect <- UVM.replicate (length impulseSystem) 0.0
         currId  <- newSTRef 0 
         CM.forM_ [0 .. niter] $ (\_ -> do
           _   <- writeSTRef currId 0
           CM.forM_ impulseSystem $ (\equation -> do
             i   <- readSTRef currId
             _   <- modifySTRef currId (+1)
-            imp <- M.unsafeRead impVect i
+            imp <- UVM.unsafeRead impVect i
             case equation of
               BibodiesEquation id1 id2 conf1 conf2 vc iti lb ub -> do
-                lv1 <- M.unsafeRead lVect id1
-                av1 <- M.unsafeRead aVect id1
-                lv2 <- M.unsafeRead lVect id2
-                av2 <- M.unsafeRead aVect id2
+                lv1 <- UVM.unsafeRead lVect id1
+                av1 <- UVM.unsafeRead aVect id1
+                lv2 <- UVM.unsafeRead lVect id2
+                av2 <- UVM.unsafeRead aVect id2
                 let (lv1', av1', lv2', av2', imp') = solveBibodyConstraint lv1 av1 ld1 ad1 wld1 wad1
                                                                            lv2 av2 ld2 ad2 wld2 wad2
                                                                            iti vc  lb  ub  imp
-                _ <- M.unsafeWrite impVect i imp'
-                _ <- M.unsafeWrite lVect id1 lv1'
-                _ <- M.unsafeWrite aVect id1 av1'
-                _ <- M.unsafeWrite lVect id2 lv2'
-                _ <- M.unsafeWrite aVect id2 av2'
+                _ <- UVM.unsafeWrite impVect i imp'
+                _ <- UVM.unsafeWrite lVect id1 lv1'
+                _ <- UVM.unsafeWrite aVect id1 av1'
+                _ <- UVM.unsafeWrite lVect id2 lv2'
+                _ <- UVM.unsafeWrite aVect id2 av2'
                 return ()
                 where
                 ld1  = linearDirection          conf1
@@ -136,21 +136,21 @@ solveST niter (AccumulatedImpulseSystem mid impulseSystem) =
                 wld2 = weightedLinearDirection  conf2
                 wad2 = weightedAngularDirection conf2
               UnibodyEquation  ie conf vc iti lb ub -> do
-                lv <- M.unsafeRead lVect ie
-                av <- M.unsafeRead aVect ie
+                lv <- UVM.unsafeRead lVect ie
+                av <- UVM.unsafeRead aVect ie
                 let (lv', av', imp') = solveUnibodyConstraint lv  av ld ad wld wad
                                                               iti vc lb ub imp
-                _ <- M.unsafeWrite impVect i  imp'
-                _ <- M.unsafeWrite lVect   ie lv'
-                _ <- M.unsafeWrite aVect   ie av'
+                _ <- UVM.unsafeWrite impVect i  imp'
+                _ <- UVM.unsafeWrite lVect   ie lv'
+                _ <- UVM.unsafeWrite aVect   ie av'
                 return ()
                 where
                 ld  = linearDirection          conf
                 ad  = angularDirection         conf
                 wld = weightedLinearDirection  conf
                 wad = weightedAngularDirection conf))
-        reslVect <- V.unsafeFreeze lVect
-        resaVect <- V.unsafeFreeze aVect
+        reslVect <- UV.unsafeFreeze lVect
+        resaVect <- UV.unsafeFreeze aVect
 
         return (reslVect, resaVect)
 

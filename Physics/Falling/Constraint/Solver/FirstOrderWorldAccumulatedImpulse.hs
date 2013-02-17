@@ -6,6 +6,7 @@ addFirstOrderEquations
 where
 
 import qualified Data.Vector as V
+import qualified Data.Vector.Unboxed as UV
 import Physics.Falling.Math.Transform
 import Physics.Falling.Math.Error
 import Physics.Falling.Collision.Collision
@@ -73,13 +74,13 @@ firstOrderWorldContact _ rb (CollisionDescr c _ _ n _) invN =
 
 -- Note: this step will fail with an index out of range if a body without collision is in the
 -- system
-firstOrderIntegrate :: (Dynamic rb t lv av ii) =>
-                       Double -> [ (Int, rb) ] -> V.Vector lv -> V.Vector av -> Int -> [ (Int, rb) ]
+firstOrderIntegrate :: (Dynamic rb t lv av ii, UV.Unbox lv, UV.Unbox av) =>
+                       Double -> [ (Int, rb) ] -> UV.Vector lv -> UV.Vector av -> Int -> [ (Int, rb) ]
 firstOrderIntegrate dt bodies linImpVect angImpVect shift =
           map applyBodyImpulses bodies
           where
           applyBodyImpulses (i, rb) =
             let idx    = i + shift in
-            let linImp = linImpVect V.! idx in
-            let angImp = angImpVect V.! idx in
+            let linImp = linImpVect UV.! idx in
+            let angImp = angImpVect UV.! idx in
             (i, applyPositionImpulses (dt *& linImp) (dt *& angImp) rb)
