@@ -21,35 +21,40 @@ type SimplexResult v = Either (v, [ Double ], Simplex v, Simplex v) -- need more
                               (v, [ Double ], Simplex v)            -- success
 
 initialSimplexResult :: (Dimension v, Vector v, DotProd v) => v -> SimplexResult v
-initialSimplexResult initialPoint = Left (initialPoint, [], emptySimplex, emptySimplex)
+initialSimplexResult initialPoint = let initSimplex = addPoint initialPoint emptySimplex in
+                                    Left (initialPoint, [1.0], initSimplex, initSimplex)
 
-distance :: (Dimension v, ImplicitShape g1 v, ImplicitShape g2 v, Transform m v, UnitVector v n, Eq v, Fractional v) =>
-            (g1, m) -> (g2, m) -> Double
-distance s1@(_, t1) s2@(_, t2) =
+distance :: (Dimension     v
+             , ImplicitShape g1 v
+             , ImplicitShape g2 v
+             , UnitVector    v n
+             , Eq            v
+             , Fractional    v) =>
+            g1 -> g2 -> Double
+distance g1 g2 =
          distanceToOrigin cso (neg notZeroDirection)
          where
-         cso              = mkCSOWithTransforms s1 s2
-         initialDirection = translation t1 &- translation t2
-         notZeroDirection = if lensqr initialDirection /= 0.0 then initialDirection
-                                                              else 1.0
+         cso              = mkCSO g1 g2
+         -- initialDirection = -- translation t1 &- translation t2
+         notZeroDirection = 1.0 -- if lensqr initialDirection /= 0.0 then initialDirection
+                            --                                   else 1.0
 
 closestPoints :: (Dimension     v
                   , ImplicitShape g1 v
                   , ImplicitShape g2 v
-                  , Transform     m  v
                   , UnitVector    v  n
                   , Eq            v
                   , Fractional    v) =>
-                 (g1, m) -> (g2, m) -> Maybe (v, v)
-closestPoints s1@(_, t1) s2@(_, t2) =
+                 g1 -> g2 -> Maybe (v, v)
+closestPoints g1 g2 =
               case algorithmGJK cso $ initialSimplexResult initialPoint of
               Nothing        -> Nothing
               Just (_, b, s) -> Just $ _pointsFromAnnotatedSimplex b s 
               where
-              cso              = mkAnnotatedCSOWithTransforms s1 s2
-              initialDirection = translation t1 &- translation t2
-              notZeroDirection = if lensqr initialDirection /= 0.0 then initialDirection
-                                                                   else 1.0
+              cso              = mkAnnotatedCSO g1 g2
+              -- initialDirection = 1.0 -- translation t1 &- translation t2
+              notZeroDirection = 1.0 -- if lensqr initialDirection /= 0.0 then initialDirection
+                                     --                            else 1.0
               initialPoint     = supportPoint cso (AnnotatedVector notZeroDirection undefined)
 
 distanceToOrigin :: (Dimension v, ImplicitShape g v, Eq v, DotProd v, Fractional v) =>
