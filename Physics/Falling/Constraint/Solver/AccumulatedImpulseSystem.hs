@@ -154,6 +154,7 @@ solveST niter (AccumulatedImpulseSystem mid impulseSystem) =
 
         return (reslVect, resaVect)
 
+{-# INLINE solveBibodyConstraint #-}
 solveBibodyConstraint :: (Vector lv, Vector av, DotProd lv, DotProd av) =>
                          lv -> av ->
                          lv -> av ->
@@ -195,6 +196,7 @@ solveBibodyConstraint linearVelocity1   angularVelocity1
                                                                               impulseLowerBound
                                                                               impulseUpperBound
 
+{-# INLINE solveUnibodyConstraint #-}
 solveUnibodyConstraint :: (Vector lv, Vector av, DotProd lv, DotProd av) =>
                           lv -> av ->
                           lv -> av ->
@@ -226,6 +228,7 @@ solveUnibodyConstraint linVel           angVel
                                                                                impulseLowerBound
                                                                                impulseUpperBound
 
+{-# INLINE solveClamp #-}
 solveClamp :: Double -> Double -> Double -> Double -> Double -> Double -> (Double, Double)
 solveClamp value objective factor solution lowerBound upperBound =
            (clampedSolution, clampedCorrection)

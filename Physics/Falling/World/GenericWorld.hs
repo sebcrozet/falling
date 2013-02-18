@@ -29,12 +29,19 @@ data (Identifiable rb idt, IndexGenerator ig rb, Integrable rb, BroadPhase bf rb
         {
           broadPhase                     :: bf
           , collisionDetectionDispatcher :: rb -> rb -> nf
-          , collisionGraph               :: CollisionGraph rb nf
+          , -- | The world collision graph. It contains any information about which object is in
+            -- contact with which other object. It also contains informations about contact
+            -- manifolds.
+            collisionGraph               :: CollisionGraph rb nf
           , constraintSolver             :: Double -> [ (Int, rb) ] -> [ cm ] -> ( [ (Int, rb) ], [ cm ] )
           , islandNodeFilter             :: CollisionLink nf -> Bool
           , islandEdgeFilter             :: CollisionLink nf -> Bool
           , activeBodyFilter             :: rb -> Bool
-          , activeBodies                 :: [rb]
+          , -- | Active bodies handled by the physics world. An active body is assumed to be a body
+            -- which can move (eg. not the ground) and which is quite moving at the moment (eg. it
+            -- is not asleep). Use this to get the list of bodies which might have been moved by
+            -- the physics engine during the last update.
+            activeBodies                 :: [rb]
           , nodeId2GraphIndex            :: M.Map idt Int
           , graphIndex2Node              :: M.Map Int rb -- FIXME: use an IntMap ?
           , node2GraphIndexGenerator     :: ig
@@ -72,10 +79,12 @@ mkWorld initBroadPhase
             , node2GraphIndexGenerator     = initIndexGenerator
           }
 
+-- | The list of all bodies present on a physics world.
 rigidBodies ::(Identifiable rb idt , IndexGenerator ig rb, Integrable rb, BroadPhase bf rb , NarrowPhase nf rb cm) =>
               World rb bf nf cm ig idt -> [ rb ]
 rigidBodies = (map snd).bodies.collisionGraph
 
+-- | Adds a body to a physics world.
 addRigidBody :: (Identifiable rb idt , IndexGenerator ig rb, Integrable rb, BroadPhase bf rb , NarrowPhase nf rb cm) =>
                 rb -> World rb bf nf cm ig idt -> World rb bf nf cm ig idt
 addRigidBody b world = world {
@@ -94,10 +103,12 @@ addRigidBody b world = world {
                                                     else
                                                       currentActiveBodies
 
+-- | Adds several bodies to a physics world.
 addRigidBodies :: (Identifiable rb idt , IndexGenerator ig rb, Integrable rb, BroadPhase bf rb , NarrowPhase nf rb cm) =>
                   [rb] -> World rb bf nf cm ig idt -> World rb bf nf cm ig idt
 addRigidBodies bs world = foldr addRigidBody world bs
 
+-- | Removes a body from the physics world.
 removeRigidBody :: (Identifiable rb idt , IndexGenerator ig rb, Integrable rb, BroadPhase bf rb , NarrowPhase nf rb cm) =>
                    rb -> World rb bf nf cm ig idt -> World rb bf nf cm ig idt
 removeRigidBody b world = world {
@@ -115,10 +126,14 @@ removeRigidBody b world = world {
                           bodyIdentifier   = identifier b
                           bodyGraphIndex   = nodeId2GraphIndex world M.! bodyIdentifier
 
+-- | Removes several bodies from the physics world.
 removeRigidBodies :: (Identifiable rb idt, IndexGenerator ig rb, Integrable rb, BroadPhase bf rb , NarrowPhase nf rb cm) =>
                      [rb] -> World rb bf nf cm ig idt -> World rb bf nf cm ig idt
 removeRigidBodies bs world = foldr removeRigidBody world bs
 
+-- | Updates the world assuming a user-defined time step occured since the last update. It is
+-- recommended to keep the time-step small and constant over updates. A typical and recommeded
+-- time-step value for video games is 0.016 (for 60Hz simulation).
 step :: (Identifiable rb idt , IndexGenerator ig rb, Integrable rb, BroadPhase bf rb , NarrowPhase nf rb cm) =>
         Double -> World rb bf nf cm ig idt -> World rb bf nf cm ig idt
 step dt world = newWorld

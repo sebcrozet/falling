@@ -17,23 +17,32 @@ where
 
 import Data.Vect.Double.Base hiding(translation)
 
--- FIXME: rename this module with something more descriptive
-
 class DeltaTransform p v where
   deltaTransform          :: p -> v -> v
   deltaTransformTranspose :: p -> v -> v
 
+-- | Class of objects holding translation informations.
 class Translatable p v | p -> v where
+  -- | The translation of the object.
   translation  :: p -> v
+
+  -- | Appends a translation to the object.
   translate    :: v -> p -> p
 
+-- | Class of objects holding rotation informations.
 class Rotatable p r | p -> r where
+  -- | The rotation of the object.
   rotation :: p -> r
+
+  -- | Appends a rotation to the object.
   rotate   :: r -> p -> p
 
+-- | Appends a rotation to an object. The rotation is applied relative to a use-defined point
+-- instead of the origin.
 rotateWrtPoint :: (AbelianGroup v, Rotatable p r, Translatable p v) => r -> v -> p -> p
 rotateWrtPoint ang point = translate point . rotate ang . translate (neg point)
 
+-- | Appends a rotation to an object. The rotation is applied relative to object center.
 rotateWrtCenter :: (AbelianGroup v, Rotatable p r, Translatable p v) => r -> p -> p
 rotateWrtCenter ang p = rotateWrtPoint ang (translation p) p
 
