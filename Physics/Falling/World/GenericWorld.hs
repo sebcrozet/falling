@@ -7,6 +7,7 @@ World
 , rigidBodies
 , addRigidBody
 , addRigidBodies
+, updateRigidBody
 , removeRigidBody
 , removeRigidBodies
 , step
@@ -107,6 +108,13 @@ addRigidBody b world = world {
 addRigidBodies :: (Identifiable rb idt , IndexGenerator ig rb, Integrable rb, BroadPhase bf rb , NarrowPhase nf rb cm) =>
                   [rb] -> World rb bf nf cm ig idt -> World rb bf nf cm ig idt
 addRigidBodies bs world = foldr addRigidBody world bs
+
+-- | Notifies the world that the state of has been changed from the outside of the engine.
+updateRigidBody :: (Identifiable rb idt , IndexGenerator ig rb, Integrable rb, BroadPhase bf rb , NarrowPhase nf rb cm) =>
+                   rb -> World rb bf nf cm ig idt -> World rb bf nf cm ig idt
+updateRigidBody b world = world { -- FIXME: wont work for static bodies and inactive bodies
+                            activeBodies = b : (deleteBy (\b1 b2 -> identifier b1 == identifier b2) b $ activeBodies world)
+                          }
 
 -- | Removes a body from the physics world.
 removeRigidBody :: (Identifiable rb idt , IndexGenerator ig rb, Integrable rb, BroadPhase bf rb , NarrowPhase nf rb cm) =>
