@@ -15,6 +15,8 @@ import Physics.Falling.RigidBody.RigidBody
 import Physics.Falling.RigidBody.OrderedRigidBody
 import qualified Physics.Falling.Constraint.Solver.AccumulatedImpulse as AI
 
+-- expose for specialization
+{-# INLINABLE solveConstraintsIsland #-}
 solveConstraintsIsland :: (OrthonormalBasis     lv n
                            , Ord                idt
                            , TransformSystem    t lv av
@@ -22,8 +24,8 @@ solveConstraintsIsland :: (OrthonormalBasis     lv n
                            , TransformableShape dvt t dvt'
                            , TransformableShape svt t svt'
                            , UnitVector         lv n
-                           , Unbox           lv
-                           , Unbox           av) =>
+                           , Unbox              lv
+                           , Unbox              av) =>
                           Double ->
                           [ (Int, OrderedRigidBody idt t lv av i ii dvt svt dvt' svt') ] ->
                           [ ContactManifold lv n ] ->

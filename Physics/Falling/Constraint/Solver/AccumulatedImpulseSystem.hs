@@ -1,3 +1,6 @@
+{-# LANGUAGE BangPatterns             #-}
+{-# OPTIONS_GHC -funbox-strict-fields #-}
+
 module Physics.Falling.Constraint.Solver.AccumulatedImpulseSystem
 (
 AccumulatedImpulseSystem
@@ -10,6 +13,7 @@ where
 
 import Control.Monad.ST
 import qualified Control.Monad as CM
+import qualified Data.Vector as V
 import qualified Data.Vector.Unboxed as UV
 import qualified Data.Vector.Unboxed.Mutable as UVM
 import Data.STRef
@@ -17,22 +21,22 @@ import Physics.Falling.Math.Transform
 import Physics.Falling.Constraint.Solver.ContactDynamicConfiguration
 
 data Equation lv av = UnibodyEquation {
-                        index                :: Int
-                        , configuration      :: ContactDynamicConfiguration lv av
-                        , velocityCorrection :: Double
-                        , invTotalInvInertia :: Double
-                        , lowLimit           :: Double
-                        , higLimit           :: Double
+                        index                :: !Int
+                        , configuration      :: !(ContactDynamicConfiguration lv av)
+                        , velocityCorrection :: !Double
+                        , invTotalInvInertia :: !Double
+                        , lowLimit           :: !Double
+                        , higLimit           :: !Double
                       }
                       | BibodiesEquation {
-                        index1               :: Int
-                        , index2             :: Int
-                        , configuration1     :: ContactDynamicConfiguration lv av
-                        , configuration2     :: ContactDynamicConfiguration lv av
-                        , velocityCorrection :: Double
-                        , invTotalInvInertia :: Double
-                        , lowLimit           :: Double
-                        , higLimit           :: Double
+                        index1               :: !Int
+                        , index2             :: !Int
+                        , configuration1     :: !(ContactDynamicConfiguration lv av)
+                        , configuration2     :: !(ContactDynamicConfiguration lv av)
+                        , velocityCorrection :: !Double
+                        , invTotalInvInertia :: !Double
+                        , lowLimit           :: !Double
+                        , higLimit           :: !Double
                       } deriving(Show)
 
 data AccumulatedImpulseSystem lv av = AccumulatedImpulseSystem Int [ Equation lv av ]
@@ -55,7 +59,7 @@ addSingleBodyEquation conf idx lLimit hLimit err (AccumulatedImpulseSystem mid i
                                       index                = idx
                                       , configuration      = conf
                                       , velocityCorrection = -(linearVelocity conf + angularVelocity conf)
-                                                             + 0.4 * err
+                                                             + 0.8 * err
                                       , invTotalInvInertia = 1.0 / (inverseLinearInertia   conf +
                                                                     inverseInertiaMomentum conf)
                                       , lowLimit           = lLimit
@@ -83,7 +87,7 @@ addTwoBodiesEquation conf1 conf2 id1 id2 lLimit hLimit err (AccumulatedImpulseSy
                                                               angularVelocity conf1 +
                                                               linearVelocity  conf2 +
                                                               angularVelocity conf2)
-                                                            + 0.4 * err
+                                                            + 0.8 * err
                                      , invTotalInvInertia = 1.0 / (inverseLinearInertia   conf1 +
                                                                    inverseInertiaMomentum conf1 +
                                                                    inverseLinearInertia   conf2 +
@@ -92,11 +96,14 @@ addTwoBodiesEquation conf1 conf2 id1 id2 lLimit hLimit err (AccumulatedImpulseSy
                                      , higLimit           = hLimit
                                    }
 
+-- expose for specialization
+{-# INLINABLE solve #-}
 solve :: (Vector lv, Vector av, DotProd lv, DotProd av, UVM.Unbox lv, UVM.Unbox av) =>
          Int -> AccumulatedImpulseSystem lv av -> Maybe (UV.Vector lv, UV.Vector av)
 solve _     (AccumulatedImpulseSystem _ []) = Nothing
-solve niter system = Just $ runST $ solveST niter system
+solve niter system                          = Just $ runST $ solveST niter system
 
+{-# INLINE solveST #-}
 solveST :: (Vector lv, Vector av, DotProd lv, DotProd av, UVM.Unbox lv, UVM.Unbox av) =>
            Int -> AccumulatedImpulseSystem lv av -> ST s (UV.Vector lv, UV.Vector av)
 solveST niter (AccumulatedImpulseSystem mid impulseSystem) =
@@ -104,12 +111,13 @@ solveST niter (AccumulatedImpulseSystem mid impulseSystem) =
         lVect   <- UVM.replicate (mid + 1) zero -- FIXME: can have a huge memory cost
         aVect   <- UVM.replicate (mid + 1) zero -- FIXME: can have a huge memory cost
         impVect <- UVM.replicate (length impulseSystem) 0.0
+        let sysVect = V.fromList $ impulseSystem
         currId  <- newSTRef 0 
-        CM.forM_ [0 .. niter] $ (\_ -> do
+        CM.forM_ [1 .. niter] $ (\_ -> do
           _   <- writeSTRef currId 0
-          CM.forM_ impulseSystem $ (\equation -> do
+          V.forM_ sysVect $ (\equation -> do
             i   <- readSTRef currId
-            _   <- modifySTRef currId (+1)
+            _   <- modifySTRef' currId (+1)
             imp <- UVM.unsafeRead impVect i
             case equation of
               BibodiesEquation id1 id2 conf1 conf2 vc iti lb ub -> do
@@ -120,12 +128,11 @@ solveST niter (AccumulatedImpulseSystem mid impulseSystem) =
                 let (lv1', av1', lv2', av2', imp') = solveBibodyConstraint lv1 av1 ld1 ad1 wld1 wad1
                                                                            lv2 av2 ld2 ad2 wld2 wad2
                                                                            iti vc  lb  ub  imp
-                _ <- UVM.unsafeWrite impVect i imp'
-                _ <- UVM.unsafeWrite lVect id1 lv1'
-                _ <- UVM.unsafeWrite aVect id1 av1'
-                _ <- UVM.unsafeWrite lVect id2 lv2'
-                _ <- UVM.unsafeWrite aVect id2 av2'
-                return ()
+                UVM.unsafeWrite impVect i imp'
+                UVM.unsafeWrite lVect id1 lv1'
+                UVM.unsafeWrite aVect id1 av1'
+                UVM.unsafeWrite lVect id2 lv2'
+                UVM.unsafeWrite aVect id2 av2'
                 where
                 ld1  = linearDirection          conf1
                 ad1  = angularDirection         conf1
@@ -140,10 +147,9 @@ solveST niter (AccumulatedImpulseSystem mid impulseSystem) =
                 av <- UVM.unsafeRead aVect ie
                 let (lv', av', imp') = solveUnibodyConstraint lv  av ld ad wld wad
                                                               iti vc lb ub imp
-                _ <- UVM.unsafeWrite impVect i  imp'
-                _ <- UVM.unsafeWrite lVect   ie lv'
-                _ <- UVM.unsafeWrite aVect   ie av'
-                return ()
+                UVM.unsafeWrite impVect i  imp'
+                UVM.unsafeWrite lVect   ie lv'
+                UVM.unsafeWrite aVect   ie av'
                 where
                 ld  = linearDirection          conf
                 ad  = angularDirection         conf
@@ -206,9 +212,9 @@ solveUnibodyConstraint :: (Vector lv, Vector av, DotProd lv, DotProd av) =>
                           Double -> Double ->
                           Double ->
                           (lv, av, Double)
-solveUnibodyConstraint linVel           angVel
-                       linDir           angDir
-                       wlinDir          wangDir
+solveUnibodyConstraint linVel            angVel
+                       linDir            angDir
+                       wlinDir           wangDir
                        invTotalInertia
                        totalVelocityCorrection
                        impulseLowerBound impulseUpperBound

@@ -16,6 +16,8 @@ import Physics.Falling.Constraint.Solver.AccumulatedImpulseSystem
 import Physics.Falling.Constraint.Solver.FirstOrderWorldAccumulatedImpulse
 import Physics.Falling.Constraint.Solver.SecondOrderWorldAccumulatedImpulse
 
+-- expose for specialization
+{-# INLINABLE solveConstraintsIsland #-}
 solveConstraintsIsland :: (OrthonormalBasis lv n, Dynamic rb t lv av ii, UnitVector lv n, UV.Unbox lv, UV.Unbox av) =>
                           Double ->
                           [ (Int, rb) ] ->
@@ -33,7 +35,7 @@ solveConstraintsIsland dt bodies contacts =
                               otherB
   numBodyIndex        = mm - m + 1
   indexShift          = -m
-  projectedBodies     = solveSystem 20 dt bodies indexShift secondOrderIntegrate
+  projectedBodies     = solveSystem 50 dt bodies indexShift secondOrderIntegrate
                         $ foldr (addSecondOrderEquations dt bodiesVect indexShift) emptySystem contacts
   projectedBodiesVect = initBodiesVect projectedBodies indexShift numBodyIndex
 
@@ -44,6 +46,7 @@ initBodiesVect bodies indexShift numBodyIndex = runST $ do
                         _ <- mapM_ (\(i, b) -> write bodyVect (i + indexShift) b) $ bodies
                         V.unsafeFreeze bodyVect
 
+{-# INLINABLE solveSystem #-}
 solveSystem :: (Dynamic rb t lv av ii, UV.Unbox lv, UV.Unbox av) =>
                Int                                                                               ->
                Double                                                                            ->
