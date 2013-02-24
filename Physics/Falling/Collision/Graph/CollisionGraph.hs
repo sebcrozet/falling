@@ -30,6 +30,7 @@ CollisionGraph
 , bodies
 , bodies'
 , collisions
+, collisions'
 , collisionGroupsAndBodies
 , collisionGroupsAndBodies'
 , collisionsWithBodies
@@ -136,6 +137,11 @@ bodies' g = map snd (bodies g)
 
 collisions :: CollisionGraph b c -> [Collision c]
 collisions = labEdges
+
+collisions' :: CollisionGraph b c -> [c]
+collisions' = map third . collisions
+              where
+              third (_, _, c) = c
 
 collisionsWithBody :: CollisionGraph b c -> BodyId -> [Collision c]
 collisionsWithBody g b = let (preds, _, _, succs) = context g b in
