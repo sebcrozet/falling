@@ -12,6 +12,7 @@ import Physics.Falling.Collision.Detection.GJK
 import Physics.Falling.Collision.Detection.MinkowskiSampling
 import Physics.Falling.Collision.Collision
 
+{-# INLINABLE collideImplicitShapeImplicitShape #-}
 collideImplicitShapeImplicitShape :: (Dimension       v
                                       , ImplicitShape g1 v
                                       , ImplicitShape g2 v
@@ -37,7 +38,6 @@ collideImplicitShapeImplicitShape g1 g2 numSamples =
                                                         marginn = n &* margin
                                   Nothing          ->  _deepPenetration g1 g2 numSamples
 
-
 _deepPenetration :: (Dimension       v
                      , ImplicitShape g1 v
                      , ImplicitShape g2 v
@@ -50,7 +50,6 @@ _deepPenetration :: (Dimension       v
 _deepPenetration g1 g2 numSamples =
                  case approximatePenetration g1 g2 numSamples of
                  Nothing              -> error "Internal error: penetration should have been computed at this point."
-                 Just (depth, p1, p2) -> Just $ (p1 &+ marginn, p2 &- marginn, n, depth)
-                                         where
-                                         n       = mkNormal (p1 &- p2)
-                                         marginn = fromNormal n &* margin
+                 Just (depth, p1, p2, n) -> Just $ (p1 &+ marginn, p2 &- marginn, n, depth)
+                                            where
+                                            marginn = fromNormal n &* margin

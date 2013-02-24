@@ -22,7 +22,7 @@ approximatePenetration:: (Dimension       v
                           , Fractional    v
                           , UnitSphere    n
                           , Eq            v) =>
-                          g1 -> g2 -> Int -> Maybe (Double, v, v)
+                          g1 -> g2 -> Int -> Maybe (Double, v, v, n)
 approximatePenetration g1 g2 numSamples =
                        approximatePenetrationWithDirections g1 g2 (nUnitSphereSamples numSamples)
 
@@ -33,12 +33,12 @@ approximatePenetrationWithDirections :: (Dimension       v
                                          , UnitVector    v  n
                                          , Fractional    v
                                          , Eq            v) =>
-                                         g1 -> g2 -> [ n ] -> Maybe (Double, v, v)
+                                         g1 -> g2 -> [ n ] -> Maybe (Double, v, v, n)
 approximatePenetrationWithDirections g1 g2 dirs = 
   if candidateDepth < 0.0 then
     error "Internal error: impossible candidateDepth"
   else
-    Just (depth, p1', p2' &- shift')
+    Just (depth, p1', p2' &- shift', finalNormal)
   where
   mg1           = ShapeWithMargin g1 margin
   mg2           = ShapeWithMargin g2 margin
@@ -48,7 +48,8 @@ approximatePenetrationWithDirections g1 g2 dirs =
                                         dirs
   shift           = canditateNormal &* candidateDepth
   Just (p1, p2)   = closestPoints g1 $ translate shift g2
-  finalNormal     = fromNormal $ mkNormal $ p2 &- p1
-  depth           = finalNormal &. supportPoint cso finalNormal
-  shift'          = finalNormal &* depth
+  finalNormal     = mkNormal $ p2 &- p1
+  finalNormalv    = fromNormal finalNormal
+  depth           = finalNormalv &. supportPoint cso finalNormalv
+  shift'          = finalNormalv &* depth
   Just (p1', p2') = closestPoints g1 $ translate shift' g2
