@@ -153,7 +153,7 @@ step dt world = newWorld
                 cs         = constraintSolver  world
 
                 -- integrate
-                forwardDynamicsBodies = map (integrateVelocity dt) $ activeBodies world
+                forwardDynamicsBodies = map (integrateVelocity dt . integratePosition dt) $ activeBodies world
                 fdBodiesWithIndex     = map (\b -> (n2g M.! identifier b, b)) forwardDynamicsBodies
 
                 -- execute broad phase
@@ -192,11 +192,10 @@ step dt world = newWorld
                 third (_, _, v)    = v       
                 solvedContacts     = map (\(bs, nfs) -> cs dt bs $ map (collisions.third) nfs) islands
                 solvedBodies       = map snd $ concatMap fst solvedContacts
-                repositionedBodies = map (integratePosition dt) $ solvedBodies
 
                 -- update the world
                 newWorld = world {
-                             activeBodies     = repositionedBodies
+                             activeBodies     = solvedBodies
                              , broadPhase     = newBroadPhase
                              , collisionGraph = afterUpdateCollisionGraph
                            }
