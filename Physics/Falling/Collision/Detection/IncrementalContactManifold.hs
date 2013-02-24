@@ -23,7 +23,7 @@ updateContacts t1 t2 = map (\(Just c) -> c) . filter isJust . map (updateContact
 updateContact :: (Transform m v, UnitVector v n) =>
                  m -> m -> CollisionDescr v n -> Maybe (CollisionDescr v n)
 updateContact t1 t2 coll@(CollisionDescr _ lp1 lp2 n _) =
-              if d' < 0.0 || lensqr terr > gap * gap then
+              if d' < -gap || lensqr terr > gap * gap then
                 Nothing
               else
                 Just newcoll
@@ -34,14 +34,20 @@ updateContact t1 t2 coll@(CollisionDescr _ lp1 lp2 n _) =
               n'      = wp1 &- wp2
               d'      = n' &. nv
               terr    = n' &- nv &* d'
-              newcoll = coll { penetrationDepth = d' }
+              newcoll = coll {
+                          contactCenter    = (wp1 &+ wp2) &* 0.5
+                          , penetrationDepth = d'
+                        }
 
 addContact :: (OrthonormalBasis v n, Dimension v) =>
               CollisionDescr v n -> [CollisionDescr v n] -> [CollisionDescr v n]
 addContact c cs = if length cs < 2 * (dim (contactCenter c) - 1) + 1 then
-                    c : cs
+                    c : [ e | e <- cs, not $ approxEqual e c ]
                   else
                     c : _reduceContactsList cs
+                  where
+                  approxEqual a b = let ab = contactCenter a &- contactCenter b in
+                                    lensqr ab <= gap * gap
 
 _reduceContactsList :: (Vector v, UnitVector v n, OrthonormalBasis v n) =>
                        [ CollisionDescr v n ] -> [ CollisionDescr v n ]
@@ -53,11 +59,9 @@ _reduceContactsList cs = map snd $ _removeDup bestPoints
                          hyperplanev       = map fromNormal $ snd $ completeBasis averageNormal
                          projections       = map (\v -> map (&. v) (map contactCenter cs))
                                                  hyperplanev
-                         bestPoints        = map snd $ map (\p -> assert (length ics /= 0 && length p /= 0)
-                                                                  $ foldr1
-                                                                    (\a@(pt, _) b@(cpt, _) ->
-                                                                      if pt > cpt then a else b)
-                                                                    $ zip p ics)
+                         bestPoints        = map snd $ map (\p -> foldr1 (\a@(pt, _) b@(cpt, _) ->
+                                                                            if pt > cpt then a else b)
+                                                                          $ zip p ics)
                                                             projections
 
 _indexedVect :: [ a ] -> Int -> [ (Int, a) ]
@@ -69,4 +73,4 @@ _removeDup []              = []
 _removeDup ((e@(i, _)):cs) = if any ((== i).fst) cs then
                                _removeDup cs
                              else
-                               e:_removeDup cs
+                               e : _removeDup cs
